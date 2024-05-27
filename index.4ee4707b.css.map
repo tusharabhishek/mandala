@@ -1,0 +1,1 @@
+{"mappings":"AAAA;;;;AAIA","sources":["src/styles/style.css"],"sourcesContent":["#main-canvas {\n  border: 1px solid black;\n}\n\n.control-box {\n  border: 1px solid blue;\n  position: fixed;\n  top: 0;\n  right: 0;\n}"],"names":[],"version":3,"file":"index.4ee4707b.css.map","sourceRoot":"/__parcel_source_root/"}
