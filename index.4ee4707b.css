@@ -13,7 +13,7 @@ body {
 #toolbox {
   width: 30vw;
   height: 90vh;
-  position: absolute;
+  position: fixed;
   top: 1em;
   right: 1em;
 }
@@ -23,6 +23,7 @@ body {
   grid-auto-rows: 4em;
   gap: .5em;
   height: 25vh;
+  padding: 1px;
   display: grid;
   overflow-y: auto;
 }
