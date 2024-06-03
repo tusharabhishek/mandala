@@ -590,7 +590,7 @@ var _gridJsDefault = parcelHelpers.interopDefault(_gridJs);
 var _primitivesJs = require("./primitives.js");
 var _primitivesJsDefault = parcelHelpers.interopDefault(_primitivesJs);
 var _stateJs = require("./state.js");
-/* Grid */ const grid = new (0, _gridJsDefault.default)();
+const grid = new (0, _gridJsDefault.default)();
 /* Dynamic UI */ const primitiveOptionBox = document.querySelector("#prim-option-box");
 for(const id in 0, _primitivesJsDefault.default)addPrimitiveButton(primitiveOptionBox, id);
 const controls = {
@@ -599,6 +599,12 @@ const controls = {
     rotation: document.querySelector("#control-rotation"),
     scale: document.querySelector("#control-scale")
 };
+const valueLabels = {
+    distance: document.querySelector("#control-distance + span"),
+    angle: document.querySelector("#control-angle + span"),
+    rotation: document.querySelector("#control-rotation + span"),
+    scale: document.querySelector("#control-scale + span")
+};
 controls.distance.min = "0";
 controls.distance.max = "1";
 controls.distance.step = "0.01";
@@ -606,8 +612,7 @@ controls.distance.addEventListener("input", (ev)=>{
     (0, _stateJs.mandalaState).update((0, _stateJs.appState).selectedPrimitive, {
         distance: +ev.target.value
     });
-    const valueText = document.querySelector("#control-distance + span");
-    valueText.textContent = +ev.target.value;
+    valueLabels.distance.textContent = +ev.target.value;
 });
 controls.angle.min = "0";
 controls.angle.max = "359";
@@ -615,8 +620,7 @@ controls.angle.addEventListener("input", (ev)=>{
     (0, _stateJs.mandalaState).update((0, _stateJs.appState).selectedPrimitive, {
         angle: +ev.target.value
     });
-    const valueText = document.querySelector("#control-angle + span");
-    valueText.textContent = +ev.target.value;
+    valueLabels.angle.textContent = +ev.target.value;
 });
 controls.rotation.min = "0";
 controls.rotation.max = "359";
@@ -624,8 +628,7 @@ controls.rotation.addEventListener("input", (ev)=>{
     (0, _stateJs.mandalaState).update((0, _stateJs.appState).selectedPrimitive, {
         rotation: +ev.target.value
     });
-    const valueText = document.querySelector("#control-rotation + span");
-    valueText.textContent = +ev.target.value;
+    valueLabels.rotation.textContent = +ev.target.value;
 });
 controls.scale.min = "0";
 controls.scale.max = "1";
@@ -634,8 +637,7 @@ controls.scale.addEventListener("input", (ev)=>{
     (0, _stateJs.mandalaState).update((0, _stateJs.appState).selectedPrimitive, {
         scale: +ev.target.value
     });
-    const valueText = document.querySelector("#control-scale + span");
-    valueText.textContent = +ev.target.value;
+    valueLabels.scale.textContent = +ev.target.value;
 });
 /*
 const primitiveOptionBox = document.querySelector('#prim-option-box');
@@ -750,6 +752,10 @@ function changeState(symbol) {
         controls.angle.value = `${props.angle}`;
         controls.rotation.value = `${props.rotation}`;
         controls.scale.value = `${props.scale}`;
+        valueLabels.distance.textContent = `${props.distance}`;
+        valueLabels.angle.textContent = `${props.angle}`;
+        valueLabels.rotation.textContent = `${props.rotation}`;
+        valueLabels.scale.textContent = `${props.scale}`;
     }
 }
 

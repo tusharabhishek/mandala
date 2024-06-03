@@ -70,4 +70,10 @@ body {
   flex-direction: column;
   display: flex;
 }
+
+.control-bar {
+  grid-template-columns: 1fr 2fr 1fr;
+  justify-items: center;
+  display: grid;
+}
 /*# sourceMappingURL=index.4ee4707b.css.map */
