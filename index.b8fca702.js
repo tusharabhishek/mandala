@@ -142,14 +142,14 @@
       this[globalName] = mainExports;
     }
   }
-})({"80HYy":[function(require,module,exports) {
+})({"8bDoD":[function(require,module,exports) {
 var global = arguments[3];
 var HMR_HOST = null;
 var HMR_PORT = null;
 var HMR_SECURE = false;
 var HMR_ENV_HASH = "d6ea1d42532a7575";
 var HMR_USE_SSE = false;
-module.bundle.HMR_BUNDLE_ID = "710c6a17e668ad24";
+module.bundle.HMR_BUNDLE_ID = "5a1bda1ab8fca702";
 "use strict";
 /* global HMR_HOST, HMR_PORT, HMR_ENV_HASH, HMR_SECURE, HMR_USE_SSE, chrome, browser, __parcel__import__, __parcel__importScripts__, ServiceWorkerGlobalScope */ /*::
 import type {
@@ -583,102 +583,107 @@ function hmrAccept(bundle /*: ParcelRequire */ , id /*: string */ ) {
     });
 }
 
-},{}],"3LleC":[function(require,module,exports) {
-// URLs pointing to primitive images
+},{}],"3cYfC":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-var _imageUrlsJs = require("./imageUrls.js");
-var _imageUrlsJsDefault = parcelHelpers.interopDefault(_imageUrlsJs);
 var _gridJs = require("./grid.js");
 var _gridJsDefault = parcelHelpers.interopDefault(_gridJs);
 var _primitivesJs = require("./primitives.js");
 var _primitivesJsDefault = parcelHelpers.interopDefault(_primitivesJs);
+var _stateJs = require("./state.js");
 /* Grid */ const grid = new (0, _gridJsDefault.default)();
-/* Primitive Options */ const primOptionBox = document.querySelector("#prim-option-box");
-for(const id in 0, _imageUrlsJsDefault.default){
-    const imageDiv = document.createElement("div");
-    imageDiv.className = "image-option";
-    imageDiv.style.backgroundImage = `url("${(0, _imageUrlsJsDefault.default)[id].href}")`;
-    primOptionBox.appendChild(imageDiv);
-}
-/* Image */ function transparentIfNotBlack({ r, g, b, a }) {
-    if (r != 0 || g != 0 || b != 0) return {
-        r,
-        g,
-        b,
-        a: 0
-    };
-    else return {
-        r,
-        g,
-        b,
-        a: 255
-    };
-}
-function prepareImage(loadedImage) {
-    const offCanvas = document.createElement("canvas");
-    const context = offCanvas.getContext("2d");
-    offCanvas.width = loadedImage.width;
-    offCanvas.height = loadedImage.height;
-    context.drawImage(loadedImage, 0, 0);
-    // make pixels transparent where needed
-    // calculate the centroid too while at it
-    // let sumCoords = { x: 0, y: 0 };
-    // let count     = 0;
-    let imageData = context.getImageData(0, 0, offCanvas.width, offCanvas.height);
-    for(let y = 0; y < imageData.height; ++y)for(let x = 0; x < imageData.width; ++x){
-        let index = y * imageData.width * 4 + x * 4;
-        let [r, g, b] = imageData.data.slice(index, index + 3);
-        // let isWhite = r == 255 && g == 255 && b == 255;
-        /*
-      if (!isWhite) {
-        ++count;
-        sumCoords.x += x;
-        sumCoords.y += y;
-      }
-      */ imageData.data[index + 3] = 255 - (r + g + b) / 3;
-    }
-    context.putImageData(imageData, 0, 0);
-    let preparedImage = {
-        loaded: false,
-        // centroid: { x: sumCoords.x / count, y: sumCoords.y / count },
-        data: new Image()
-    };
-    preparedImage.data.addEventListener("load", ()=>{
-        preparedImage.loaded = true;
-    });
-    preparedImage.data.src = offCanvas.toDataURL();
-    // console.log(preparedImage.centroid);
-    return preparedImage;
-}
-let tempImage = null;
-let sourceImage = new Image();
-sourceImage.addEventListener("load", ()=>{
-    tempImage = prepareImage(sourceImage);
-});
-sourceImage.src = (0, _imageUrlsJsDefault.default)[11];
-let params = {
-    distance: 0,
-    angle: 0,
-    rotation: 0,
-    scale: 0.25
+/* Dynamic UI */ const primitiveOptionBox = document.querySelector("#prim-option-box");
+for(const id in 0, _primitivesJsDefault.default)addPrimitiveButton(primitiveOptionBox, id);
+const controls = {
+    distance: document.querySelector("#control-distance"),
+    angle: document.querySelector("#control-angle"),
+    rotation: document.querySelector("#control-rotation"),
+    scale: document.querySelector("#control-scale")
 };
-function drawPreparedImage(canvas, preparedImage, { distance, angle, rotation, scale }, order) {
-    if (!preparedImage || !preparedImage.loaded) return;
-    const context = canvas.getContext("2d");
-    for(let i = 0; i < order; ++i){
-        context.save();
-        let nextAngle = 360 / order * i;
-        context.translate(canvas.width / 2, canvas.height / 2); // translate to center
-        context.rotate(toRad(angle + nextAngle)); // rotate about the center (of the canvas)
-        context.translate(distance, 0); // move given distance away from the center
-        context.rotate(toRad(rotation)); // rotate about the new center (of the object)
-        context.scale(scale, scale); // perform scaling
-        context.translate(-preparedImage.data.width / 2, -preparedImage.data.height / 2); // offset so that image is drawn at center
-        context.drawImage(preparedImage.data, 0, 0);
-        context.restore();
-    }
+controls.distance.min = "0";
+controls.distance.max = "1";
+controls.distance.step = "0.01";
+controls.distance.addEventListener("input", (ev)=>{
+    (0, _stateJs.mandalaState).update((0, _stateJs.appState).selectedPrimitive, {
+        distance: +ev.target.value
+    });
+    const valueText = document.querySelector("#control-distance + span");
+    valueText.textContent = +ev.target.value;
+});
+controls.angle.min = "0";
+controls.angle.max = "359";
+controls.angle.addEventListener("input", (ev)=>{
+    (0, _stateJs.mandalaState).update((0, _stateJs.appState).selectedPrimitive, {
+        angle: +ev.target.value
+    });
+    const valueText = document.querySelector("#control-angle + span");
+    valueText.textContent = +ev.target.value;
+});
+controls.rotation.min = "0";
+controls.rotation.max = "359";
+controls.rotation.addEventListener("input", (ev)=>{
+    (0, _stateJs.mandalaState).update((0, _stateJs.appState).selectedPrimitive, {
+        rotation: +ev.target.value
+    });
+    const valueText = document.querySelector("#control-rotation + span");
+    valueText.textContent = +ev.target.value;
+});
+controls.scale.min = "0";
+controls.scale.max = "1";
+controls.scale.step = "0.01";
+controls.scale.addEventListener("input", (ev)=>{
+    (0, _stateJs.mandalaState).update((0, _stateJs.appState).selectedPrimitive, {
+        scale: +ev.target.value
+    });
+    const valueText = document.querySelector("#control-scale + span");
+    valueText.textContent = +ev.target.value;
+});
+/*
+const primitiveOptionBox = document.querySelector('#prim-option-box');
+const usedPrimitivesBox  = document.querySelector('#prim-used-box');
+
+for (const id in primitives) {
+  const primitiveButton     = document.createElement('button');
+  
+  const primitiveButtonIcon = document.createElement('img');
+
+  primitiveButtonIcon.src = imageURLs[id];
+  primitiveButtonIcon.classList.add('image-icon');
+
+  primitiveButton.appendChild(primitiveButtonIcon);
+
+  primitiveButton.classList.add('image-button');
+  
+  primitiveButton.addEventListener('click', () => {
+    mandalaState.add(primitives[id], { order: grid.symOrder });
+
+    const usedPrimitiveEntry = document.createElement('div');
+
+    const usedPrimitiveIcon = document.createElement('img');
+
+    usedPrimitiveIcon.src = imageURLs[id];
+    usedPrimitiveIcon.classList.add('image-icon');
+
+    usedPrimitiveEntry.appendChild(usedPrimitiveIcon);
+
+    const primitiveDeleteButton = document.createElement('button');
+
+    primitiveDeleteButton.textContent = 'Delete';
+    primitiveDeleteButton.classList.add('prim-delete');
+
+    usedPrimitiveEntry.appendChild(primitiveDeleteButton);
+
+    usedPrimitiveEntry.classList.add('prim-entry');
+
+    usedPrimitiveEntry.addEventListener('click', () => {
+
+    });
+
+    usedPrimitivesBox.appendChild(usedPrimitiveEntry);
+  });
+
+  primitiveOptionBox.appendChild(primitiveButton);
 }
-/* Clear the canvas */ function clear(canvas) {
+*/ /* Image */ /* Clear the canvas */ function clear(canvas) {
     const context = canvas.getContext("2d");
     context.clearRect(0, 0, canvas.width, canvas.height);
 }
@@ -688,259 +693,67 @@ function draw() {
     const canvas = document.querySelector("#main-canvas");
     clear(canvas);
     grid.draw(canvas);
-    (0, _primitivesJsDefault.default)[1].draw(canvas);
-    (0, _primitivesJsDefault.default)[2].draw(canvas);
-// drawPreparedImage(canvas, tempImage, params, grid.symOrder);
+    (0, _stateJs.mandalaState).primitives.forEach(({ primitive, props })=>{
+        primitive.draw(canvas, props);
+    });
 }
 window.onload = function() {
     window.requestAnimationFrame(draw);
 };
-/* Helpers */ function toRad(deg) {
-    return Math.PI * deg / 180;
-}
-
-},{"./imageUrls.js":"7WJg4","./grid.js":"7Jpqy","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./primitives.js":"9GoLL"}],"7WJg4":[function(require,module,exports) {
-// Need to hard-code image URLs as simple strings because
-// parcel won't understand anything else during compile time
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-const imageURLs = {};
-imageURLs[1] = new URL(require("c2eef0de058c740d"));
-imageURLs[2] = new URL(require("52a7a861fda9f30b"));
-imageURLs[3] = new URL(require("9c18ef670372a950"));
-imageURLs[4] = new URL(require("9cb9b835c8aecf1e"));
-imageURLs[5] = new URL(require("4e7685da53edcdb2"));
-imageURLs[6] = new URL(require("7dfad34e076d902a"));
-imageURLs[7] = new URL(require("e6b69140c90bc1ac"));
-imageURLs[8] = new URL(require("8d0f2d7300b372dc"));
-imageURLs[9] = new URL(require("b6486eecfa6dd0c"));
-imageURLs[10] = new URL(require("9c484782eeeb396f"));
-imageURLs[11] = new URL(require("92e2dcdb599e0e86"));
-imageURLs[12] = new URL(require("d52baa4075fb2b3"));
-imageURLs[13] = new URL(require("6062f456d781d0cb"));
-imageURLs[14] = new URL(require("5ed07d784ed75992"));
-imageURLs[15] = new URL(require("1a62b5c043c2fad6"));
-imageURLs[16] = new URL(require("99101774e61f2692"));
-imageURLs[17] = new URL(require("4861c5c899050042"));
-imageURLs[18] = new URL(require("28a2665c49a6300"));
-imageURLs[19] = new URL(require("11b8569b0e6d4678"));
-imageURLs[20] = new URL(require("921e796bcaa4ce5d"));
-imageURLs[21] = new URL(require("5b48a9e2d2dc19f7"));
-imageURLs[22] = new URL(require("c9ef71e630295927"));
-imageURLs[23] = new URL(require("8f33d966f5fbb7ac"));
-imageURLs[24] = new URL(require("eb88667065e3cf00"));
-imageURLs[25] = new URL(require("36aafb8798b994a2"));
-imageURLs[26] = new URL(require("c02b5382e379fe35"));
-imageURLs[27] = new URL(require("a28f62b1ecb9edad"));
-imageURLs[28] = new URL(require("d8294d38c186241f"));
-imageURLs[29] = new URL(require("77d67807a0769154"));
-imageURLs[30] = new URL(require("69a7031e495f7be0"));
-imageURLs[31] = new URL(require("ca5bd563d3e72b8d"));
-imageURLs[32] = new URL(require("a811b18f1c0bb33a"));
-imageURLs[33] = new URL(require("88e40d88b661dd4b"));
-imageURLs[34] = new URL(require("9bf4dae99eaef48c"));
-imageURLs[35] = new URL(require("4be596869190e41b"));
-imageURLs[36] = new URL(require("e73aafba07ea7b67"));
-imageURLs[37] = new URL(require("94ff87e1c79456f"));
-imageURLs[39] = new URL(require("98420d767ed21275"));
-imageURLs[40] = new URL(require("c7de6fb8246c75a9"));
-imageURLs[41] = new URL(require("df791106f119ec62"));
-imageURLs[42] = new URL(require("9736b820bbd18588"));
-imageURLs[43] = new URL(require("ad45e95ea0806af9"));
-exports.default = imageURLs;
-
-},{"c2eef0de058c740d":"dO0ic","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","52a7a861fda9f30b":"3u0Uw","9c18ef670372a950":"bz58y","9cb9b835c8aecf1e":"9CTBo","4e7685da53edcdb2":"c21Hc","7dfad34e076d902a":"da1aP","e6b69140c90bc1ac":"brheT","8d0f2d7300b372dc":"duqBx","b6486eecfa6dd0c":"9NAKT","9c484782eeeb396f":"lXVmi","92e2dcdb599e0e86":"cSVjI","d52baa4075fb2b3":"fEgU7","6062f456d781d0cb":"1A2bj","5ed07d784ed75992":"igT91","1a62b5c043c2fad6":"cEVa7","99101774e61f2692":"ja5bj","4861c5c899050042":"1vVzo","28a2665c49a6300":"asq85","11b8569b0e6d4678":"2Ilri","921e796bcaa4ce5d":"hM8xj","5b48a9e2d2dc19f7":"gS5T6","c9ef71e630295927":"2fNFE","8f33d966f5fbb7ac":"5ou4J","eb88667065e3cf00":"7ucle","36aafb8798b994a2":"60VWP","c02b5382e379fe35":"hFvsv","a28f62b1ecb9edad":"hppRe","d8294d38c186241f":"3LH5i","77d67807a0769154":"uSHgh","69a7031e495f7be0":"epMIa","ca5bd563d3e72b8d":"7wMVF","a811b18f1c0bb33a":"5prQs","88e40d88b661dd4b":"dPEJF","9bf4dae99eaef48c":"6cicA","4be596869190e41b":"7viC4","e73aafba07ea7b67":"1vUHs","94ff87e1c79456f":"iG25G","98420d767ed21275":"a94OQ","c7de6fb8246c75a9":"ikhdU","df791106f119ec62":"7yTDU","9736b820bbd18588":"444C7","ad45e95ea0806af9":"IsRLM"}],"dO0ic":[function(require,module,exports) {
-module.exports = require("10cad7457214eac8").getBundleURL("9HKMd") + "primitive_1.0d76476d.png" + "?" + Date.now();
-
-},{"10cad7457214eac8":"lgJ39"}],"lgJ39":[function(require,module,exports) {
-"use strict";
-var bundleURL = {};
-function getBundleURLCached(id) {
-    var value = bundleURL[id];
-    if (!value) {
-        value = getBundleURL();
-        bundleURL[id] = value;
-    }
-    return value;
-}
-function getBundleURL() {
-    try {
-        throw new Error();
-    } catch (err) {
-        var matches = ("" + err.stack).match(/(https?|file|ftp|(chrome|moz|safari-web)-extension):\/\/[^)\n]+/g);
-        if (matches) // The first two stack frames will be this function and getBundleURLCached.
-        // Use the 3rd one, which will be a runtime in the original bundle.
-        return getBaseURL(matches[2]);
-    }
-    return "/";
-}
-function getBaseURL(url) {
-    return ("" + url).replace(/^((?:https?|file|ftp|(chrome|moz|safari-web)-extension):\/\/.+)\/[^/]+$/, "$1") + "/";
-}
-// TODO: Replace uses with `new URL(url).origin` when ie11 is no longer supported.
-function getOrigin(url) {
-    var matches = ("" + url).match(/(https?|file|ftp|(chrome|moz|safari-web)-extension):\/\/[^/]+/);
-    if (!matches) throw new Error("Origin not found");
-    return matches[0];
-}
-exports.getBundleURL = getBundleURLCached;
-exports.getBaseURL = getBaseURL;
-exports.getOrigin = getOrigin;
-
-},{}],"gkKU3":[function(require,module,exports) {
-exports.interopDefault = function(a) {
-    return a && a.__esModule ? a : {
-        default: a
-    };
-};
-exports.defineInteropFlag = function(a) {
-    Object.defineProperty(a, "__esModule", {
-        value: true
-    });
-};
-exports.exportAll = function(source, dest) {
-    Object.keys(source).forEach(function(key) {
-        if (key === "default" || key === "__esModule" || Object.prototype.hasOwnProperty.call(dest, key)) return;
-        Object.defineProperty(dest, key, {
-            enumerable: true,
-            get: function() {
-                return source[key];
-            }
+/* Helpers */ function addPrimitiveButton(parentNode, primitiveID) {
+    const primitiveButton = document.createElement("button");
+    const primitiveIcon = document.createElement("img");
+    primitiveIcon.classList.add("image-icon");
+    primitiveIcon.src = (0, _primitivesJsDefault.default)[primitiveID].url;
+    primitiveButton.appendChild(primitiveIcon);
+    primitiveButton.classList.add("image-button");
+    primitiveButton.addEventListener("click", ()=>{
+        const usedPrimitiveBox = document.querySelector("#prim-used-box");
+        const symbol = Symbol();
+        (0, _stateJs.mandalaState).add(symbol, (0, _primitivesJsDefault.default)[primitiveID], {
+            order: 8
         });
+        changeState(symbol);
+        addUsedPrimitive(usedPrimitiveBox, primitiveID, symbol);
     });
-    return dest;
-};
-exports.export = function(dest, destName, get) {
-    Object.defineProperty(dest, destName, {
-        enumerable: true,
-        get: get
+    parentNode.appendChild(primitiveButton);
+}
+function addUsedPrimitive(parentNode, primitiveID, symbol) {
+    const primitiveEntry = document.createElement("div");
+    const primitiveIcon = document.createElement("img");
+    primitiveIcon.classList.add("image-icon");
+    primitiveIcon.src = (0, _primitivesJsDefault.default)[primitiveID].url;
+    primitiveEntry.appendChild(primitiveIcon);
+    const primitiveDeleteButton = document.createElement("button");
+    primitiveDeleteButton.textContent = "Delete";
+    primitiveDeleteButton.addEventListener("click", (ev)=>{
+        ev.stopPropagation();
+        (0, _stateJs.mandalaState).remove(symbol);
+        changeState(null);
+        primitiveEntry.remove();
     });
-};
+    primitiveEntry.appendChild(primitiveDeleteButton);
+    primitiveEntry.classList.add("prim-entry");
+    primitiveEntry.addEventListener("click", ()=>{
+        changeState(symbol);
+    });
+    parentNode.appendChild(primitiveEntry);
+}
+function changeState(symbol) {
+    (0, _stateJs.appState).selectedPrimitive = symbol;
+    const controlsSet = document.querySelector("#controls-set");
+    if (symbol === null) controlsSet.classList.add("hidden");
+    else {
+        controlsSet.classList.remove("hidden");
+        const props = (0, _stateJs.mandalaState).primitives.get(symbol).props;
+        controls.distance.value = `${props.distance}`;
+        controls.angle.value = `${props.angle}`;
+        controls.rotation.value = `${props.rotation}`;
+        controls.scale.value = `${props.scale}`;
+    }
+}
 
-},{}],"3u0Uw":[function(require,module,exports) {
-module.exports = require("e91c8dd37bac8907").getBundleURL("9HKMd") + "primitive_2.4f2cd23b.png" + "?" + Date.now();
-
-},{"e91c8dd37bac8907":"lgJ39"}],"bz58y":[function(require,module,exports) {
-module.exports = require("c855907e96e2ff37").getBundleURL("9HKMd") + "primitive_3.d5d63ab3.png" + "?" + Date.now();
-
-},{"c855907e96e2ff37":"lgJ39"}],"9CTBo":[function(require,module,exports) {
-module.exports = require("1bd8fd0add02f8de").getBundleURL("9HKMd") + "primitive_4.a515d11f.png" + "?" + Date.now();
-
-},{"1bd8fd0add02f8de":"lgJ39"}],"c21Hc":[function(require,module,exports) {
-module.exports = require("870924ae92711f47").getBundleURL("9HKMd") + "primitive_5.99ec732d.png" + "?" + Date.now();
-
-},{"870924ae92711f47":"lgJ39"}],"da1aP":[function(require,module,exports) {
-module.exports = require("1271d91cbd1860d6").getBundleURL("9HKMd") + "primitive_6.d34d7944.png" + "?" + Date.now();
-
-},{"1271d91cbd1860d6":"lgJ39"}],"brheT":[function(require,module,exports) {
-module.exports = require("e1e29f665d486183").getBundleURL("9HKMd") + "primitive_7.a1168d2e.png" + "?" + Date.now();
-
-},{"e1e29f665d486183":"lgJ39"}],"duqBx":[function(require,module,exports) {
-module.exports = require("1d712b1aec561534").getBundleURL("9HKMd") + "primitive_8.50d17dc5.png" + "?" + Date.now();
-
-},{"1d712b1aec561534":"lgJ39"}],"9NAKT":[function(require,module,exports) {
-module.exports = require("ca9bc7d1fe411c66").getBundleURL("9HKMd") + "primitive_9.13087161.png" + "?" + Date.now();
-
-},{"ca9bc7d1fe411c66":"lgJ39"}],"lXVmi":[function(require,module,exports) {
-module.exports = require("43bbe2a757c74c51").getBundleURL("9HKMd") + "primitive_10.6714895f.png" + "?" + Date.now();
-
-},{"43bbe2a757c74c51":"lgJ39"}],"cSVjI":[function(require,module,exports) {
-module.exports = require("9579ec2cf43546f6").getBundleURL("9HKMd") + "primitive_11.1cf009c2.png" + "?" + Date.now();
-
-},{"9579ec2cf43546f6":"lgJ39"}],"fEgU7":[function(require,module,exports) {
-module.exports = require("a8c7ca113b719209").getBundleURL("9HKMd") + "primitive_12.f416b66f.png" + "?" + Date.now();
-
-},{"a8c7ca113b719209":"lgJ39"}],"1A2bj":[function(require,module,exports) {
-module.exports = require("bac24b2d1b4a7ccb").getBundleURL("9HKMd") + "primitive_13.36ab5b39.png" + "?" + Date.now();
-
-},{"bac24b2d1b4a7ccb":"lgJ39"}],"igT91":[function(require,module,exports) {
-module.exports = require("81613d5254c76d7").getBundleURL("9HKMd") + "primitive_14.5629ec0d.png" + "?" + Date.now();
-
-},{"81613d5254c76d7":"lgJ39"}],"cEVa7":[function(require,module,exports) {
-module.exports = require("732654e5f57ccf33").getBundleURL("9HKMd") + "primitive_15.a346c158.png" + "?" + Date.now();
-
-},{"732654e5f57ccf33":"lgJ39"}],"ja5bj":[function(require,module,exports) {
-module.exports = require("d5630854ddd5f37f").getBundleURL("9HKMd") + "primitive_16.45bbbbe2.png" + "?" + Date.now();
-
-},{"d5630854ddd5f37f":"lgJ39"}],"1vVzo":[function(require,module,exports) {
-module.exports = require("e005635cb2bbafc2").getBundleURL("9HKMd") + "primitive_17.029f35f3.png" + "?" + Date.now();
-
-},{"e005635cb2bbafc2":"lgJ39"}],"asq85":[function(require,module,exports) {
-module.exports = require("8a25532d2f4352f6").getBundleURL("9HKMd") + "primitive_18.423d2641.png" + "?" + Date.now();
-
-},{"8a25532d2f4352f6":"lgJ39"}],"2Ilri":[function(require,module,exports) {
-module.exports = require("46d168ce1e4f8ed1").getBundleURL("9HKMd") + "primitive_19.92654cf8.png" + "?" + Date.now();
-
-},{"46d168ce1e4f8ed1":"lgJ39"}],"hM8xj":[function(require,module,exports) {
-module.exports = require("c89e5f96f270ec53").getBundleURL("9HKMd") + "primitive_20.f41994a2.png" + "?" + Date.now();
-
-},{"c89e5f96f270ec53":"lgJ39"}],"gS5T6":[function(require,module,exports) {
-module.exports = require("5bfc9f0a7c07553d").getBundleURL("9HKMd") + "primitive_21.22437a3c.png" + "?" + Date.now();
-
-},{"5bfc9f0a7c07553d":"lgJ39"}],"2fNFE":[function(require,module,exports) {
-module.exports = require("9846b0dd4ef2d2a").getBundleURL("9HKMd") + "primitive_22.2c78e259.png" + "?" + Date.now();
-
-},{"9846b0dd4ef2d2a":"lgJ39"}],"5ou4J":[function(require,module,exports) {
-module.exports = require("54bbb760f958449b").getBundleURL("9HKMd") + "primitive_23.268877f7.png" + "?" + Date.now();
-
-},{"54bbb760f958449b":"lgJ39"}],"7ucle":[function(require,module,exports) {
-module.exports = require("be826be8e921320f").getBundleURL("9HKMd") + "primitive_24.714eecd2.png" + "?" + Date.now();
-
-},{"be826be8e921320f":"lgJ39"}],"60VWP":[function(require,module,exports) {
-module.exports = require("9adee96382595b01").getBundleURL("9HKMd") + "primitive_25.df274f1f.png" + "?" + Date.now();
-
-},{"9adee96382595b01":"lgJ39"}],"hFvsv":[function(require,module,exports) {
-module.exports = require("f36ffc15327040a8").getBundleURL("9HKMd") + "primitive_26.5e56619a.png" + "?" + Date.now();
-
-},{"f36ffc15327040a8":"lgJ39"}],"hppRe":[function(require,module,exports) {
-module.exports = require("73bcb10c1dba07bb").getBundleURL("9HKMd") + "primitive_27.14e1cb49.png" + "?" + Date.now();
-
-},{"73bcb10c1dba07bb":"lgJ39"}],"3LH5i":[function(require,module,exports) {
-module.exports = require("95471208d577b59b").getBundleURL("9HKMd") + "primitive_28.9a895720.png" + "?" + Date.now();
-
-},{"95471208d577b59b":"lgJ39"}],"uSHgh":[function(require,module,exports) {
-module.exports = require("644abd6261f54b45").getBundleURL("9HKMd") + "primitive_29.9ad269ac.png" + "?" + Date.now();
-
-},{"644abd6261f54b45":"lgJ39"}],"epMIa":[function(require,module,exports) {
-module.exports = require("85681ff433c328e3").getBundleURL("9HKMd") + "primitive_30.514f3932.png" + "?" + Date.now();
-
-},{"85681ff433c328e3":"lgJ39"}],"7wMVF":[function(require,module,exports) {
-module.exports = require("44a132066bf8c7a2").getBundleURL("9HKMd") + "primitive_31.033ce8af.png" + "?" + Date.now();
-
-},{"44a132066bf8c7a2":"lgJ39"}],"5prQs":[function(require,module,exports) {
-module.exports = require("71e358fe3a2e622a").getBundleURL("9HKMd") + "primitive_32.7ca91c26.png" + "?" + Date.now();
-
-},{"71e358fe3a2e622a":"lgJ39"}],"dPEJF":[function(require,module,exports) {
-module.exports = require("79509be6eb1476c2").getBundleURL("9HKMd") + "primitive_33.915eaeaf.png" + "?" + Date.now();
-
-},{"79509be6eb1476c2":"lgJ39"}],"6cicA":[function(require,module,exports) {
-module.exports = require("2553723f1cb8ed73").getBundleURL("9HKMd") + "primitive_34.ea5aec13.png" + "?" + Date.now();
-
-},{"2553723f1cb8ed73":"lgJ39"}],"7viC4":[function(require,module,exports) {
-module.exports = require("a853838bff32360f").getBundleURL("9HKMd") + "primitive_35.2d474a24.png" + "?" + Date.now();
-
-},{"a853838bff32360f":"lgJ39"}],"1vUHs":[function(require,module,exports) {
-module.exports = require("540b4897701d53df").getBundleURL("9HKMd") + "primitive_36.900d50af.png" + "?" + Date.now();
-
-},{"540b4897701d53df":"lgJ39"}],"iG25G":[function(require,module,exports) {
-module.exports = require("f2be496841dad4c").getBundleURL("9HKMd") + "primitive_37.0e409ad1.png" + "?" + Date.now();
-
-},{"f2be496841dad4c":"lgJ39"}],"a94OQ":[function(require,module,exports) {
-module.exports = require("ac76a3c554733870").getBundleURL("9HKMd") + "primitive_39.e4807f02.png" + "?" + Date.now();
-
-},{"ac76a3c554733870":"lgJ39"}],"ikhdU":[function(require,module,exports) {
-module.exports = require("37b3854374217bdc").getBundleURL("9HKMd") + "primitive_40.b3f93179.png" + "?" + Date.now();
-
-},{"37b3854374217bdc":"lgJ39"}],"7yTDU":[function(require,module,exports) {
-module.exports = require("9d8e244dd8d67667").getBundleURL("9HKMd") + "primitive_41.7ae3ebea.png" + "?" + Date.now();
-
-},{"9d8e244dd8d67667":"lgJ39"}],"444C7":[function(require,module,exports) {
-module.exports = require("ffefa9a26566c253").getBundleURL("9HKMd") + "primitive_42.a7f02f01.png" + "?" + Date.now();
-
-},{"ffefa9a26566c253":"lgJ39"}],"IsRLM":[function(require,module,exports) {
-module.exports = require("c19a85d730a5b220").getBundleURL("9HKMd") + "primitive_43.1d5b1894.png" + "?" + Date.now();
-
-},{"c19a85d730a5b220":"lgJ39"}],"7Jpqy":[function(require,module,exports) {
+},{"./grid.js":"7Jpqy","./primitives.js":"9GoLL","./state.js":"2DgWL","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"7Jpqy":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _helpersJs = require("./helpers.js");
@@ -1011,16 +824,48 @@ function toRad(deg) {
     return deg / 180 * Math.PI;
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"9GoLL":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gkKU3":[function(require,module,exports) {
+exports.interopDefault = function(a) {
+    return a && a.__esModule ? a : {
+        default: a
+    };
+};
+exports.defineInteropFlag = function(a) {
+    Object.defineProperty(a, "__esModule", {
+        value: true
+    });
+};
+exports.exportAll = function(source, dest) {
+    Object.keys(source).forEach(function(key) {
+        if (key === "default" || key === "__esModule" || Object.prototype.hasOwnProperty.call(dest, key)) return;
+        Object.defineProperty(dest, key, {
+            enumerable: true,
+            get: function() {
+                return source[key];
+            }
+        });
+    });
+    return dest;
+};
+exports.export = function(dest, destName, get) {
+    Object.defineProperty(dest, destName, {
+        enumerable: true,
+        get: get
+    });
+};
+
+},{}],"9GoLL":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _imageUrls = require("./imageUrls");
 var _imageUrlsDefault = parcelHelpers.interopDefault(_imageUrls);
+var _helpers = require("./helpers");
 class Primitive {
     constructor(id = 1){
         this.ready = false;
+        this.url = (0, _imageUrlsDefault.default)[id];
         this.rawData = new Image();
-        this.rawData.src = (0, _imageUrlsDefault.default)[id];
+        this.rawData.src = this.url;
         this.rawData.addEventListener("load", ()=>{
             this.imageData = new Image();
             this.imageData.src = processImage(this.rawData);
@@ -1029,10 +874,21 @@ class Primitive {
             });
         });
     }
-    draw(canvas) {
+    draw(canvas, { distance, angle, rotation, scale, order }) {
         if (!this.ready) return;
         const context = canvas.getContext("2d");
-        context.drawImage(this.imageData, 0, 0);
+        for(let i = 0; i < order; ++i){
+            let nextAngle = angle + i * 360 / order;
+            context.save();
+            context.translate(canvas.width / 2, canvas.height / 2); // translate to center
+            context.rotate((0, _helpers.toRad)(-90 + nextAngle)); // rotate about the center (of the canvas)
+            context.translate(distance * canvas.width / 2, 0); // move given distance away from the center
+            context.rotate((0, _helpers.toRad)(90 + rotation)); // rotate about the new center (of the object)
+            context.scale(scale, scale); // perform scaling
+            context.translate(-this.imageData.width / 2, -this.imageData.height / 2); // offset so that image is drawn at center
+            context.drawImage(this.imageData, 0, 0);
+            context.restore();
+        }
     }
 }
 function processImage(image) {
@@ -1054,6 +910,256 @@ const primitives = {};
 for(const id in 0, _imageUrlsDefault.default)primitives[id] = new Primitive(id);
 exports.default = primitives;
 
-},{"./imageUrls":"7WJg4","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["80HYy","3LleC"], "3LleC", "parcelRequiref046")
+},{"./imageUrls":"7WJg4","./helpers":"luDvE","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"7WJg4":[function(require,module,exports) {
+// Need to hard-code image URLs as simple strings because
+// parcel won't understand anything else during compile time
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+const imageURLs = {};
+imageURLs[1] = new URL(require("c2eef0de058c740d"));
+imageURLs[2] = new URL(require("52a7a861fda9f30b"));
+imageURLs[3] = new URL(require("9c18ef670372a950"));
+imageURLs[4] = new URL(require("9cb9b835c8aecf1e"));
+imageURLs[5] = new URL(require("4e7685da53edcdb2"));
+imageURLs[6] = new URL(require("7dfad34e076d902a"));
+imageURLs[7] = new URL(require("e6b69140c90bc1ac"));
+imageURLs[8] = new URL(require("8d0f2d7300b372dc"));
+imageURLs[9] = new URL(require("b6486eecfa6dd0c"));
+imageURLs[10] = new URL(require("9c484782eeeb396f"));
+imageURLs[11] = new URL(require("92e2dcdb599e0e86"));
+imageURLs[12] = new URL(require("d52baa4075fb2b3"));
+imageURLs[13] = new URL(require("6062f456d781d0cb"));
+imageURLs[14] = new URL(require("5ed07d784ed75992"));
+imageURLs[15] = new URL(require("1a62b5c043c2fad6"));
+imageURLs[16] = new URL(require("99101774e61f2692"));
+imageURLs[17] = new URL(require("4861c5c899050042"));
+imageURLs[18] = new URL(require("28a2665c49a6300"));
+imageURLs[19] = new URL(require("11b8569b0e6d4678"));
+imageURLs[20] = new URL(require("921e796bcaa4ce5d"));
+imageURLs[21] = new URL(require("5b48a9e2d2dc19f7"));
+imageURLs[22] = new URL(require("c9ef71e630295927"));
+imageURLs[23] = new URL(require("8f33d966f5fbb7ac"));
+imageURLs[24] = new URL(require("eb88667065e3cf00"));
+imageURLs[25] = new URL(require("36aafb8798b994a2"));
+imageURLs[26] = new URL(require("c02b5382e379fe35"));
+imageURLs[27] = new URL(require("a28f62b1ecb9edad"));
+imageURLs[28] = new URL(require("d8294d38c186241f"));
+imageURLs[29] = new URL(require("77d67807a0769154"));
+imageURLs[30] = new URL(require("69a7031e495f7be0"));
+imageURLs[31] = new URL(require("ca5bd563d3e72b8d"));
+imageURLs[32] = new URL(require("a811b18f1c0bb33a"));
+imageURLs[33] = new URL(require("88e40d88b661dd4b"));
+imageURLs[34] = new URL(require("9bf4dae99eaef48c"));
+imageURLs[35] = new URL(require("4be596869190e41b"));
+imageURLs[36] = new URL(require("e73aafba07ea7b67"));
+imageURLs[37] = new URL(require("94ff87e1c79456f"));
+imageURLs[39] = new URL(require("98420d767ed21275"));
+imageURLs[40] = new URL(require("c7de6fb8246c75a9"));
+imageURLs[41] = new URL(require("df791106f119ec62"));
+imageURLs[42] = new URL(require("9736b820bbd18588"));
+imageURLs[43] = new URL(require("ad45e95ea0806af9"));
+exports.default = imageURLs;
 
-//# sourceMappingURL=index.e668ad24.js.map
+},{"c2eef0de058c740d":"ktZio","52a7a861fda9f30b":"9Fn32","9c18ef670372a950":"lntzS","9cb9b835c8aecf1e":"9oiBz","4e7685da53edcdb2":"1yZFC","7dfad34e076d902a":"6hxnK","e6b69140c90bc1ac":"3vWjy","8d0f2d7300b372dc":"5lvAO","b6486eecfa6dd0c":"1AkEW","9c484782eeeb396f":"5Fmvm","92e2dcdb599e0e86":"51gt3","d52baa4075fb2b3":"j7mVh","6062f456d781d0cb":"gPXyp","5ed07d784ed75992":"cy53r","1a62b5c043c2fad6":"8d9iE","99101774e61f2692":"zkT15","4861c5c899050042":"jdQW4","28a2665c49a6300":"gLqya","11b8569b0e6d4678":"53YdD","921e796bcaa4ce5d":"6TA6M","5b48a9e2d2dc19f7":"7nXkt","c9ef71e630295927":"l8JVV","8f33d966f5fbb7ac":"b113l","eb88667065e3cf00":"490db","36aafb8798b994a2":"9Hf0e","c02b5382e379fe35":"03c6w","a28f62b1ecb9edad":"bvPn8","d8294d38c186241f":"fbvQi","77d67807a0769154":"8gdpg","69a7031e495f7be0":"2XGnd","ca5bd563d3e72b8d":"aALF3","a811b18f1c0bb33a":"cESoG","88e40d88b661dd4b":"155B0","9bf4dae99eaef48c":"7T72P","4be596869190e41b":"1R46k","e73aafba07ea7b67":"lJEl9","94ff87e1c79456f":"bktKl","98420d767ed21275":"4XWSL","c7de6fb8246c75a9":"9aQVx","df791106f119ec62":"2szZH","9736b820bbd18588":"lyMtb","ad45e95ea0806af9":"45JRd","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"ktZio":[function(require,module,exports) {
+module.exports = require("e267610c9b1f5ea4").getBundleURL("7JE76") + "primitive_1.0d76476d.png" + "?" + Date.now();
+
+},{"e267610c9b1f5ea4":"lgJ39"}],"lgJ39":[function(require,module,exports) {
+"use strict";
+var bundleURL = {};
+function getBundleURLCached(id) {
+    var value = bundleURL[id];
+    if (!value) {
+        value = getBundleURL();
+        bundleURL[id] = value;
+    }
+    return value;
+}
+function getBundleURL() {
+    try {
+        throw new Error();
+    } catch (err) {
+        var matches = ("" + err.stack).match(/(https?|file|ftp|(chrome|moz|safari-web)-extension):\/\/[^)\n]+/g);
+        if (matches) // The first two stack frames will be this function and getBundleURLCached.
+        // Use the 3rd one, which will be a runtime in the original bundle.
+        return getBaseURL(matches[2]);
+    }
+    return "/";
+}
+function getBaseURL(url) {
+    return ("" + url).replace(/^((?:https?|file|ftp|(chrome|moz|safari-web)-extension):\/\/.+)\/[^/]+$/, "$1") + "/";
+}
+// TODO: Replace uses with `new URL(url).origin` when ie11 is no longer supported.
+function getOrigin(url) {
+    var matches = ("" + url).match(/(https?|file|ftp|(chrome|moz|safari-web)-extension):\/\/[^/]+/);
+    if (!matches) throw new Error("Origin not found");
+    return matches[0];
+}
+exports.getBundleURL = getBundleURLCached;
+exports.getBaseURL = getBaseURL;
+exports.getOrigin = getOrigin;
+
+},{}],"9Fn32":[function(require,module,exports) {
+module.exports = require("c898a46da2d73edb").getBundleURL("7JE76") + "primitive_2.4f2cd23b.png" + "?" + Date.now();
+
+},{"c898a46da2d73edb":"lgJ39"}],"lntzS":[function(require,module,exports) {
+module.exports = require("65770dcaf165d216").getBundleURL("7JE76") + "primitive_3.d5d63ab3.png" + "?" + Date.now();
+
+},{"65770dcaf165d216":"lgJ39"}],"9oiBz":[function(require,module,exports) {
+module.exports = require("9a7a7a266fb6ef67").getBundleURL("7JE76") + "primitive_4.a515d11f.png" + "?" + Date.now();
+
+},{"9a7a7a266fb6ef67":"lgJ39"}],"1yZFC":[function(require,module,exports) {
+module.exports = require("d22245b640558c5f").getBundleURL("7JE76") + "primitive_5.99ec732d.png" + "?" + Date.now();
+
+},{"d22245b640558c5f":"lgJ39"}],"6hxnK":[function(require,module,exports) {
+module.exports = require("53dc179bf4aaf6ce").getBundleURL("7JE76") + "primitive_6.d34d7944.png" + "?" + Date.now();
+
+},{"53dc179bf4aaf6ce":"lgJ39"}],"3vWjy":[function(require,module,exports) {
+module.exports = require("7af64e5fa92eba3d").getBundleURL("7JE76") + "primitive_7.a1168d2e.png" + "?" + Date.now();
+
+},{"7af64e5fa92eba3d":"lgJ39"}],"5lvAO":[function(require,module,exports) {
+module.exports = require("a532b73ffbbabd59").getBundleURL("7JE76") + "primitive_8.50d17dc5.png" + "?" + Date.now();
+
+},{"a532b73ffbbabd59":"lgJ39"}],"1AkEW":[function(require,module,exports) {
+module.exports = require("366e016f59b89097").getBundleURL("7JE76") + "primitive_9.13087161.png" + "?" + Date.now();
+
+},{"366e016f59b89097":"lgJ39"}],"5Fmvm":[function(require,module,exports) {
+module.exports = require("9aee9442130672b5").getBundleURL("7JE76") + "primitive_10.6714895f.png" + "?" + Date.now();
+
+},{"9aee9442130672b5":"lgJ39"}],"51gt3":[function(require,module,exports) {
+module.exports = require("b9daf99e43b3c09e").getBundleURL("7JE76") + "primitive_11.1cf009c2.png" + "?" + Date.now();
+
+},{"b9daf99e43b3c09e":"lgJ39"}],"j7mVh":[function(require,module,exports) {
+module.exports = require("3ed4e84c171d8752").getBundleURL("7JE76") + "primitive_12.f416b66f.png" + "?" + Date.now();
+
+},{"3ed4e84c171d8752":"lgJ39"}],"gPXyp":[function(require,module,exports) {
+module.exports = require("16880abfa61c8d28").getBundleURL("7JE76") + "primitive_13.36ab5b39.png" + "?" + Date.now();
+
+},{"16880abfa61c8d28":"lgJ39"}],"cy53r":[function(require,module,exports) {
+module.exports = require("46203c241584ad42").getBundleURL("7JE76") + "primitive_14.5629ec0d.png" + "?" + Date.now();
+
+},{"46203c241584ad42":"lgJ39"}],"8d9iE":[function(require,module,exports) {
+module.exports = require("ba06dfc818314b52").getBundleURL("7JE76") + "primitive_15.a346c158.png" + "?" + Date.now();
+
+},{"ba06dfc818314b52":"lgJ39"}],"zkT15":[function(require,module,exports) {
+module.exports = require("f7315754b1861a0b").getBundleURL("7JE76") + "primitive_16.45bbbbe2.png" + "?" + Date.now();
+
+},{"f7315754b1861a0b":"lgJ39"}],"jdQW4":[function(require,module,exports) {
+module.exports = require("4f48aa4b08e5985").getBundleURL("7JE76") + "primitive_17.029f35f3.png" + "?" + Date.now();
+
+},{"4f48aa4b08e5985":"lgJ39"}],"gLqya":[function(require,module,exports) {
+module.exports = require("d40b20b01207e54c").getBundleURL("7JE76") + "primitive_18.423d2641.png" + "?" + Date.now();
+
+},{"d40b20b01207e54c":"lgJ39"}],"53YdD":[function(require,module,exports) {
+module.exports = require("2c69c6ee89ae0c0e").getBundleURL("7JE76") + "primitive_19.92654cf8.png" + "?" + Date.now();
+
+},{"2c69c6ee89ae0c0e":"lgJ39"}],"6TA6M":[function(require,module,exports) {
+module.exports = require("1bddab87c1c51e36").getBundleURL("7JE76") + "primitive_20.f41994a2.png" + "?" + Date.now();
+
+},{"1bddab87c1c51e36":"lgJ39"}],"7nXkt":[function(require,module,exports) {
+module.exports = require("4114e651df7ea87e").getBundleURL("7JE76") + "primitive_21.22437a3c.png" + "?" + Date.now();
+
+},{"4114e651df7ea87e":"lgJ39"}],"l8JVV":[function(require,module,exports) {
+module.exports = require("93cf55e25ecf89a7").getBundleURL("7JE76") + "primitive_22.2c78e259.png" + "?" + Date.now();
+
+},{"93cf55e25ecf89a7":"lgJ39"}],"b113l":[function(require,module,exports) {
+module.exports = require("1998e8f81a24faea").getBundleURL("7JE76") + "primitive_23.268877f7.png" + "?" + Date.now();
+
+},{"1998e8f81a24faea":"lgJ39"}],"490db":[function(require,module,exports) {
+module.exports = require("1f468ca1e4186505").getBundleURL("7JE76") + "primitive_24.714eecd2.png" + "?" + Date.now();
+
+},{"1f468ca1e4186505":"lgJ39"}],"9Hf0e":[function(require,module,exports) {
+module.exports = require("84ab088afab5a2c9").getBundleURL("7JE76") + "primitive_25.df274f1f.png" + "?" + Date.now();
+
+},{"84ab088afab5a2c9":"lgJ39"}],"03c6w":[function(require,module,exports) {
+module.exports = require("876ecae6a69f4012").getBundleURL("7JE76") + "primitive_26.5e56619a.png" + "?" + Date.now();
+
+},{"876ecae6a69f4012":"lgJ39"}],"bvPn8":[function(require,module,exports) {
+module.exports = require("d51fcf1de5167d8e").getBundleURL("7JE76") + "primitive_27.14e1cb49.png" + "?" + Date.now();
+
+},{"d51fcf1de5167d8e":"lgJ39"}],"fbvQi":[function(require,module,exports) {
+module.exports = require("39e2440b188c61a2").getBundleURL("7JE76") + "primitive_28.9a895720.png" + "?" + Date.now();
+
+},{"39e2440b188c61a2":"lgJ39"}],"8gdpg":[function(require,module,exports) {
+module.exports = require("af493d9e1023ea4f").getBundleURL("7JE76") + "primitive_29.9ad269ac.png" + "?" + Date.now();
+
+},{"af493d9e1023ea4f":"lgJ39"}],"2XGnd":[function(require,module,exports) {
+module.exports = require("e9aad5e57a508dd3").getBundleURL("7JE76") + "primitive_30.514f3932.png" + "?" + Date.now();
+
+},{"e9aad5e57a508dd3":"lgJ39"}],"aALF3":[function(require,module,exports) {
+module.exports = require("97a0876e65d414a").getBundleURL("7JE76") + "primitive_31.033ce8af.png" + "?" + Date.now();
+
+},{"97a0876e65d414a":"lgJ39"}],"cESoG":[function(require,module,exports) {
+module.exports = require("f601cadbb7837264").getBundleURL("7JE76") + "primitive_32.7ca91c26.png" + "?" + Date.now();
+
+},{"f601cadbb7837264":"lgJ39"}],"155B0":[function(require,module,exports) {
+module.exports = require("9c69fefee004ad83").getBundleURL("7JE76") + "primitive_33.915eaeaf.png" + "?" + Date.now();
+
+},{"9c69fefee004ad83":"lgJ39"}],"7T72P":[function(require,module,exports) {
+module.exports = require("802196a98ff7caf5").getBundleURL("7JE76") + "primitive_34.ea5aec13.png" + "?" + Date.now();
+
+},{"802196a98ff7caf5":"lgJ39"}],"1R46k":[function(require,module,exports) {
+module.exports = require("56e0fcc97c244606").getBundleURL("7JE76") + "primitive_35.2d474a24.png" + "?" + Date.now();
+
+},{"56e0fcc97c244606":"lgJ39"}],"lJEl9":[function(require,module,exports) {
+module.exports = require("67a4bd9d9815c194").getBundleURL("7JE76") + "primitive_36.900d50af.png" + "?" + Date.now();
+
+},{"67a4bd9d9815c194":"lgJ39"}],"bktKl":[function(require,module,exports) {
+module.exports = require("335637ea35c999b").getBundleURL("7JE76") + "primitive_37.0e409ad1.png" + "?" + Date.now();
+
+},{"335637ea35c999b":"lgJ39"}],"4XWSL":[function(require,module,exports) {
+module.exports = require("a4632997302ad01c").getBundleURL("7JE76") + "primitive_39.e4807f02.png" + "?" + Date.now();
+
+},{"a4632997302ad01c":"lgJ39"}],"9aQVx":[function(require,module,exports) {
+module.exports = require("8e112188adacdc6d").getBundleURL("7JE76") + "primitive_40.b3f93179.png" + "?" + Date.now();
+
+},{"8e112188adacdc6d":"lgJ39"}],"2szZH":[function(require,module,exports) {
+module.exports = require("807787e665cccde5").getBundleURL("7JE76") + "primitive_41.7ae3ebea.png" + "?" + Date.now();
+
+},{"807787e665cccde5":"lgJ39"}],"lyMtb":[function(require,module,exports) {
+module.exports = require("56b13dff47e66366").getBundleURL("7JE76") + "primitive_42.a7f02f01.png" + "?" + Date.now();
+
+},{"56b13dff47e66366":"lgJ39"}],"45JRd":[function(require,module,exports) {
+module.exports = require("f088a40761b9750d").getBundleURL("7JE76") + "primitive_43.1d5b1894.png" + "?" + Date.now();
+
+},{"f088a40761b9750d":"lgJ39"}],"2DgWL":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "appState", ()=>appState);
+parcelHelpers.export(exports, "mandalaState", ()=>mandalaState);
+var _primitives = require("./primitives");
+var _primitivesDefault = parcelHelpers.interopDefault(_primitives);
+const appState = {
+    selectedPrimitive: null
+};
+const mandalaState = {
+    primitives: new Map(),
+    add (symbol, primitive, { distance = 0.5, angle = 0, rotation = 0, scale = 0.1, order = 1 } = {}) {
+        this.primitives.set(symbol, {
+            primitive,
+            props: {
+                distance,
+                angle,
+                rotation,
+                scale,
+                order
+            }
+        });
+    },
+    remove (symbol) {
+        this.primitives.delete(symbol);
+    },
+    update (symbol, { distance, angle, rotation, scale, order }) {
+        const oldProps = this.primitives.get(symbol).props;
+        const newProps = {};
+        newProps.distance = distance === undefined ? oldProps.distance : distance;
+        newProps.angle = angle === undefined ? oldProps.angle : angle;
+        newProps.rotation = rotation === undefined ? oldProps.rotation : rotation;
+        newProps.scale = scale === undefined ? oldProps.scale : scale;
+        newProps.order = order === undefined ? oldProps.order : order;
+        this.primitives.get(symbol).props = newProps;
+    }
+};
+
+},{"./primitives":"9GoLL","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["8bDoD","3cYfC"], "3cYfC", "parcelRequiref046")
+
+//# sourceMappingURL=index.b8fca702.js.map
