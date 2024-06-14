@@ -602,8 +602,8 @@ const parameters = [
     },
     {
         name: "angle",
-        min: "0",
-        max: "360",
+        min: "-180",
+        max: "180",
         step: "0.001",
         initial: "0"
     },
@@ -624,7 +624,7 @@ const parameters = [
     {
         name: "multiplicity",
         min: "1",
-        max: "8",
+        max: "24",
         step: "1",
         initial: "1"
     }
@@ -868,22 +868,11 @@ class Primitive {
             context.rotate((0, _helpers.toRad)(-90 + nextAngle)); // rotate about the center (of the canvas)
             context.translate(distance * canvas.width / 2, 0); // move given distance away from the center
             context.rotate((0, _helpers.toRad)(90 + rotation)); // rotate about the new center (of the object)
-            context.scale(scale, scale); // perform scaling
+            if (flip) context.scale(-scale, scale);
+            else context.scale(scale, scale);
             context.translate(-this.imageData.width / 2, -this.imageData.height / 2); // offset so that image is drawn at center
             context.drawImage(this.imageData, 0, 0);
             context.restore();
-            if (flip) {
-                nextAngle = angle + (i + 0.5) * 360 / totalOrder;
-                context.save();
-                context.translate(canvas.width / 2, canvas.height / 2); // translate to center
-                context.rotate((0, _helpers.toRad)(-90 + nextAngle)); // rotate about the center (of the canvas)
-                context.translate(distance * canvas.width / 2, 0); // move given distance away from the center
-                context.scale(scale, -scale); // perform scaling
-                context.rotate((0, _helpers.toRad)(90 + rotation)); // rotate about the new center (of the object)
-                context.translate(-this.imageData.width / 2, -this.imageData.height / 2); // offset so that image is drawn at center
-                context.drawImage(this.imageData, 0, 0);
-                context.restore();
-            }
         }
     }
 }
