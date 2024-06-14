@@ -12,10 +12,16 @@ body {
 
 #toolbox {
   width: 30vw;
-  height: 90vh;
+  height: 100vh;
   position: fixed;
   top: 1em;
   right: 1em;
+  overflow-y: auto;
+}
+
+#misc-controls {
+  grid-template-columns: repeat(2, 1fr);
+  display: grid;
 }
 
 #prim-option-box {
@@ -64,7 +70,11 @@ body {
 }
 
 .hidden {
-  visibility: hidden;
+  display: none;
+}
+
+.invalid {
+  background-color: red;
 }
 
 #controls-set {
@@ -72,9 +82,16 @@ body {
   display: flex;
 }
 
+#fieldset-controls input[type="number"] {
+  width: 6em;
+}
+
 .control-bar {
   grid-template-columns: 1fr 2fr 1fr;
-  justify-items: center;
   display: grid;
+}
+
+.control-bar:last-of-type label {
+  grid-column: 1 / 3;
 }
 /*# sourceMappingURL=index.4ee4707b.css.map */

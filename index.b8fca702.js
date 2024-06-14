@@ -590,6 +590,45 @@ var _gridJsDefault = parcelHelpers.interopDefault(_gridJs);
 var _primitivesJs = require("./primitives.js");
 var _primitivesJsDefault = parcelHelpers.interopDefault(_primitivesJs);
 var _stateJs = require("./state.js");
+var _uiJs = require("./ui.js");
+/* Setup state */ const order = 8;
+const parameters = [
+    {
+        name: "distance",
+        min: "0",
+        max: "1",
+        step: "0.001",
+        initial: "0.5"
+    },
+    {
+        name: "angle",
+        min: "0",
+        max: "360",
+        step: "0.001",
+        initial: "0"
+    },
+    {
+        name: "rotation",
+        min: "0",
+        max: "360",
+        step: "0.001",
+        initial: "0"
+    },
+    {
+        name: "scale",
+        min: "0",
+        max: "1",
+        step: "0.001",
+        initial: "0.1"
+    },
+    {
+        name: "multiplicity",
+        min: "1",
+        max: "8",
+        step: "1",
+        initial: "1"
+    }
+];
 const [canvasWidth, canvasHeight] = [
     800,
     800
@@ -599,182 +638,96 @@ const mainCanvas = document.querySelector("#main-canvas");
     canvasWidth,
     canvasHeight
 ];
-const grid = new (0, _gridJsDefault.default)();
-grid.draw();
 const selectionState = new (0, _stateJs.SelectionState)();
 const mandalaState = new (0, _stateJs.MandalaState)();
-/* Dynamic UI */ const primitiveOptionBox = document.querySelector("#prim-option-box");
-for(const id in 0, _primitivesJsDefault.default)addPrimitiveButton(primitiveOptionBox, id);
-const controls = {
-    distance: document.querySelector("#control-distance"),
-    angle: document.querySelector("#control-angle"),
-    rotation: document.querySelector("#control-rotation"),
-    scale: document.querySelector("#control-scale")
-};
-const valueLabels = {
-    distance: document.querySelector("#control-distance + span"),
-    angle: document.querySelector("#control-angle + span"),
-    rotation: document.querySelector("#control-rotation + span"),
-    scale: document.querySelector("#control-scale + span")
-};
-controls.distance.min = "0";
-controls.distance.max = "1";
-controls.distance.step = "0.01";
-controls.distance.addEventListener("input", (ev)=>{
-    mandalaState.updatePrimitiveState(selectionState.getState(), {
-        distance: +ev.target.value
-    });
-    valueLabels.distance.textContent = +ev.target.value;
-    requestAnimationFrame(draw);
-});
-controls.angle.min = "0";
-controls.angle.max = "359";
-controls.angle.addEventListener("input", (ev)=>{
-    mandalaState.updatePrimitiveState(selectionState.getState(), {
-        angle: +ev.target.value
-    });
-    valueLabels.angle.textContent = +ev.target.value;
-    requestAnimationFrame(draw);
-});
-controls.rotation.min = "0";
-controls.rotation.max = "359";
-controls.rotation.addEventListener("input", (ev)=>{
-    mandalaState.updatePrimitiveState(selectionState.getState(), {
-        rotation: +ev.target.value
-    });
-    valueLabels.rotation.textContent = +ev.target.value;
-    requestAnimationFrame(draw);
-});
-controls.scale.min = "0";
-controls.scale.max = "1";
-controls.scale.step = "0.01";
-controls.scale.addEventListener("input", (ev)=>{
-    mandalaState.updatePrimitiveState(selectionState.getState(), {
-        scale: +ev.target.value
-    });
-    valueLabels.scale.textContent = +ev.target.value;
-    requestAnimationFrame(draw);
-});
-/*
-const primitiveOptionBox = document.querySelector('#prim-option-box');
-const usedPrimitivesBox  = document.querySelector('#prim-used-box');
-
-for (const id in primitives) {
-  const primitiveButton     = document.createElement('button');
-  
-  const primitiveButtonIcon = document.createElement('img');
-
-  primitiveButtonIcon.src = imageURLs[id];
-  primitiveButtonIcon.classList.add('image-icon');
-
-  primitiveButton.appendChild(primitiveButtonIcon);
-
-  primitiveButton.classList.add('image-button');
-  
-  primitiveButton.addEventListener('click', () => {
-    mandalaState.add(primitives[id], { order: grid.symOrder });
-
-    const usedPrimitiveEntry = document.createElement('div');
-
-    const usedPrimitiveIcon = document.createElement('img');
-
-    usedPrimitiveIcon.src = imageURLs[id];
-    usedPrimitiveIcon.classList.add('image-icon');
-
-    usedPrimitiveEntry.appendChild(usedPrimitiveIcon);
-
-    const primitiveDeleteButton = document.createElement('button');
-
-    primitiveDeleteButton.textContent = 'Delete';
-    primitiveDeleteButton.classList.add('prim-delete');
-
-    usedPrimitiveEntry.appendChild(primitiveDeleteButton);
-
-    usedPrimitiveEntry.classList.add('prim-entry');
-
-    usedPrimitiveEntry.addEventListener('click', () => {
-
-    });
-
-    usedPrimitivesBox.appendChild(usedPrimitiveEntry);
-  });
-
-  primitiveOptionBox.appendChild(primitiveButton);
-}
-*/ /* Image */ /* Clear the canvas */ function clear(canvas) {
+const grid = new (0, _gridJsDefault.default)();
+grid.draw();
+/* Image */ /* Clear the canvas */ function clear(canvas) {
     const context = canvas.getContext("2d");
     context.clearRect(0, 0, canvas.width, canvas.height);
 }
 /* Events */ /* Top-level drawing function */ let tick = 0;
 function draw() {
-    const context = mainCanvas.getContext("2d");
     clear(mainCanvas);
     grid.drawImageTo(mainCanvas, 0, 0);
     mandalaState.drawImageTo(mainCanvas);
 }
-window.onload = function() {
+/* Setup UI when the page has loaded */ window.onload = function() {
     window.requestAnimationFrame(draw);
-};
-/* Helpers */ function addPrimitiveButton(parentNode, primitiveID) {
-    const primitiveButton = document.createElement("button");
-    const primitiveIcon = document.createElement("img");
-    primitiveIcon.classList.add("image-icon");
-    primitiveIcon.src = (0, _primitivesJsDefault.default)[primitiveID].url;
-    primitiveButton.appendChild(primitiveIcon);
-    primitiveButton.classList.add("image-button");
-    primitiveButton.addEventListener("click", ()=>{
-        const usedPrimitiveBox = document.querySelector("#prim-used-box");
-        const symbol = Symbol();
-        mandalaState.addPrimitive(symbol, (0, _primitivesJsDefault.default)[primitiveID], {
-            order: 8
+    _uiJs.setupGridToggle((flag)=>{
+        grid.visible = flag;
+        requestAnimationFrame(draw);
+    });
+    _uiJs.setupSaveButton(()=>{
+        const saveCanvas = document.createElement("canvas");
+        saveCanvas.width = canvasWidth;
+        saveCanvas.height = canvasHeight;
+        mandalaState.drawImageTo(saveCanvas);
+        saveCanvas.toBlob((blob)=>{
+            const downloadLink = document.createElement("a");
+            downloadLink.href = URL.createObjectURL(blob);
+            downloadLink.download = "mandala.png";
+            downloadLink.classList.add("hidden");
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
         });
-        changeState(symbol);
-        requestAnimationFrame(draw);
-        addUsedPrimitive(usedPrimitiveBox, primitiveID, symbol);
     });
-    parentNode.appendChild(primitiveButton);
-}
-function addUsedPrimitive(parentNode, primitiveID, symbol) {
-    const primitiveEntry = document.createElement("div");
-    const primitiveIcon = document.createElement("img");
-    primitiveIcon.classList.add("image-icon");
-    primitiveIcon.src = (0, _primitivesJsDefault.default)[primitiveID].url;
-    primitiveEntry.appendChild(primitiveIcon);
-    const primitiveDeleteButton = document.createElement("button");
-    primitiveDeleteButton.textContent = "Delete";
-    primitiveDeleteButton.addEventListener("click", (ev)=>{
-        ev.stopPropagation();
-        mandalaState.removePrimitive(symbol);
-        changeState(null);
-        requestAnimationFrame(draw);
-        primitiveEntry.remove();
-    });
-    primitiveEntry.appendChild(primitiveDeleteButton);
-    primitiveEntry.classList.add("prim-entry");
-    primitiveEntry.addEventListener("click", ()=>{
-        changeState(symbol);
-    });
-    parentNode.appendChild(primitiveEntry);
-}
-function changeState(symbol) {
-    selectionState.changeState(symbol);
-    const controlsSet = document.querySelector("#controls-set");
-    if (symbol === null) controlsSet.classList.add("hidden");
-    else {
-        controlsSet.classList.remove("hidden");
-        const props = mandalaState.primitiveGroup.get(symbol).props;
-        controls.distance.value = `${props.distance}`;
-        controls.angle.value = `${props.angle}`;
-        controls.rotation.value = `${props.rotation}`;
-        controls.scale.value = `${props.scale}`;
-        valueLabels.distance.textContent = `${props.distance}`;
-        valueLabels.angle.textContent = `${props.angle}`;
-        valueLabels.rotation.textContent = `${props.rotation}`;
-        valueLabels.scale.textContent = `${props.scale}`;
+    for(const id in 0, _primitivesJsDefault.default){
+        function clickHandler() {
+            const symbol = Symbol();
+            mandalaState.addPrimitive(symbol, (0, _primitivesJsDefault.default)[id], {
+                order
+            });
+            changeSelection(symbol);
+            return symbol;
+        }
+        function selectHandler(symbol) {
+            changeSelection(symbol);
+        }
+        function deleteHandler(symbol) {
+            mandalaState.removePrimitive(symbol);
+            changeSelection(null);
+        }
+        _uiJs.addPrimitiveButton((0, _primitivesJsDefault.default)[id], clickHandler, selectHandler, deleteHandler);
     }
+    parameters.forEach(({ name, min, max, step, initial })=>{
+        function inputHandler(value) {
+            const props = {};
+            props[name] = value;
+            mandalaState.updatePrimitiveState(selectionState.getState(), props);
+            _uiJs.updateControlsFor(name, value);
+            requestAnimationFrame(draw);
+        }
+        _uiJs.setupControlsFor(name, {
+            min,
+            max,
+            step,
+            initial
+        }, inputHandler);
+    });
+    _uiJs.setupFlipToggle((flag)=>{
+        mandalaState.updatePrimitiveState(selectionState.getState(), {
+            flip: flag
+        });
+        _uiJs.updateFlipToggle(flag);
+        requestAnimationFrame(draw);
+    });
+};
+/* Helpers */ function changeSelection(symbol) {
+    selectionState.changeState(symbol);
+    _uiJs.showControls(symbol !== null);
+    if (symbol !== null) {
+        const props = mandalaState.getPrimitiveState(symbol).props;
+        parameters.forEach((parameter)=>{
+            _uiJs.updateControlsFor(parameter.name, props[parameter.name]);
+        });
+        _uiJs.updateFlipToggle(props.flip);
+    }
+    requestAnimationFrame(draw);
 }
 
-},{"./grid.js":"7Jpqy","./primitives.js":"9GoLL","./state.js":"2DgWL","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"7Jpqy":[function(require,module,exports) {
+},{"./grid.js":"7Jpqy","./primitives.js":"9GoLL","./state.js":"2DgWL","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./ui.js":"aaZ0V"}],"7Jpqy":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _helpersJs = require("./helpers.js");
@@ -790,6 +743,11 @@ class Grid {
         this.canvas = document.createElement("canvas");
         this.canvas.width = canvasWidth;
         this.canvas.height = canvasHeight;
+        this.visible = false;
+    }
+    toggle(state) {
+        if (state === undefined) this.visible = !this.visible;
+        else this.visible = state;
     }
     draw() {
         const context = this.canvas.getContext("2d");
@@ -833,6 +791,7 @@ class Grid {
         context.restore();
     }
     drawImageTo(canvas) {
+        if (!this.visible) return;
         const context = canvas.getContext("2d");
         context.drawImage(this.canvas, 0, 0);
     }
@@ -897,12 +856,13 @@ class Primitive {
             });
         });
     }
-    draw(canvas, { distance, angle, rotation, scale, order }) {
+    draw(canvas, { distance, angle, rotation, scale, order, multiplicity, flip }) {
         if (!this.ready) return;
         const context = canvas.getContext("2d");
         context.clearRect(0, 0, canvas.width, canvas.height);
-        for(let i = 0; i < order; ++i){
-            let nextAngle = angle + i * 360 / order;
+        const totalOrder = order * multiplicity;
+        for(let i = 0; i < totalOrder; ++i){
+            let nextAngle = angle + i * 360 / totalOrder;
             context.save();
             context.translate(canvas.width / 2, canvas.height / 2); // translate to center
             context.rotate((0, _helpers.toRad)(-90 + nextAngle)); // rotate about the center (of the canvas)
@@ -912,6 +872,18 @@ class Primitive {
             context.translate(-this.imageData.width / 2, -this.imageData.height / 2); // offset so that image is drawn at center
             context.drawImage(this.imageData, 0, 0);
             context.restore();
+            if (flip) {
+                nextAngle = angle + (i + 0.5) * 360 / totalOrder;
+                context.save();
+                context.translate(canvas.width / 2, canvas.height / 2); // translate to center
+                context.rotate((0, _helpers.toRad)(-90 + nextAngle)); // rotate about the center (of the canvas)
+                context.translate(distance * canvas.width / 2, 0); // move given distance away from the center
+                context.scale(scale, -scale); // perform scaling
+                context.rotate((0, _helpers.toRad)(90 + rotation)); // rotate about the new center (of the object)
+                context.translate(-this.imageData.width / 2, -this.imageData.height / 2); // offset so that image is drawn at center
+                context.drawImage(this.imageData, 0, 0);
+                context.restore();
+            }
         }
     }
 }
@@ -1167,7 +1139,7 @@ class MandalaState {
         this.canvasWidth = canvasWidth;
         this.canvasHeight = canvasHeight;
     }
-    addPrimitive(symbol, primitive, { distance = 0.5, angle = 0, rotation = 0, scale = 0.1, order = 1 } = {}) {
+    addPrimitive(symbol, primitive, { distance = 0.5, angle = 0, rotation = 0, scale = 0.1, order = 1, multiplicity = 1, flip = false } = {}) {
         const offCanvas = document.createElement("canvas");
         offCanvas.width = this.canvasWidth;
         offCanvas.height = this.canvasHeight;
@@ -1178,7 +1150,9 @@ class MandalaState {
                 angle,
                 rotation,
                 scale,
-                order
+                order,
+                multiplicity,
+                flip
             },
             offCanvas
         });
@@ -1190,7 +1164,7 @@ class MandalaState {
     getPrimitiveState(symbol) {
         return this.primitiveGroup.get(symbol);
     }
-    updatePrimitiveState(symbol, { distance, angle, rotation, scale, order } = {}) {
+    updatePrimitiveState(symbol, { distance, angle, rotation, scale, order, multiplicity, flip } = {}) {
         const oldProps = this.primitiveGroup.get(symbol).props;
         const newProps = {};
         newProps.distance = distance ?? oldProps.distance;
@@ -1198,6 +1172,8 @@ class MandalaState {
         newProps.rotation = rotation ?? oldProps.rotation;
         newProps.scale = scale ?? oldProps.scale;
         newProps.order = order ?? oldProps.order;
+        newProps.multiplicity = multiplicity ?? oldProps.multiplicity;
+        newProps.flip = flip ?? oldProps.flip;
         this.primitiveGroup.get(symbol).props = newProps;
         drawPrimitive(this.primitiveGroup, symbol);
     }
@@ -1213,6 +1189,133 @@ function drawPrimitive(primitives, symbol) {
     primitive.draw(offCanvas, props);
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["8bDoD","3cYfC"], "3cYfC", "parcelRequiref046")
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"aaZ0V":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "setupGridToggle", ()=>setupGridToggle);
+parcelHelpers.export(exports, "setupSaveButton", ()=>setupSaveButton);
+parcelHelpers.export(exports, "addPrimitiveButton", ()=>addPrimitiveButton);
+parcelHelpers.export(exports, "setupControlsFor", ()=>setupControlsFor);
+parcelHelpers.export(exports, "setupFlipToggle", ()=>setupFlipToggle);
+parcelHelpers.export(exports, "updateControlsFor", ()=>updateControlsFor);
+parcelHelpers.export(exports, "updateFlipToggle", ()=>updateFlipToggle);
+parcelHelpers.export(exports, "showControls", ()=>showControls);
+var _primitivesJs = require("./primitives.js");
+var _primitivesJsDefault = parcelHelpers.interopDefault(_primitivesJs);
+/* Misc Controls */ function setupGridToggle(handler) {
+    const gridToggle = document.querySelector("#grid-toggle");
+    gridToggle.checked = false;
+    gridToggle.addEventListener("change", (ev)=>{
+        handler(ev.target.checked);
+    });
+}
+function setupSaveButton(handler) {
+    const saveButton = document.querySelector("#save-button");
+    saveButton.addEventListener("click", (ev)=>{
+        handler();
+    });
+}
+/* Add Primitives */ function addPrimitiveButton(primitive, clickHandler, selectionHandler, deletionHandler) {
+    const primitiveOptionBox = document.querySelector("#prim-option-box");
+    const primitiveButton = document.createElement("button");
+    const primitiveIcon = document.createElement("img");
+    primitiveIcon.classList.add("image-icon");
+    primitiveIcon.src = primitive.url;
+    primitiveButton.appendChild(primitiveIcon);
+    primitiveButton.classList.add("image-button");
+    primitiveButton.addEventListener("click", ()=>{
+        const symbol = clickHandler();
+        addUsedPrimitive(primitive, symbol, selectionHandler, deletionHandler);
+    });
+    primitiveOptionBox.appendChild(primitiveButton);
+}
+/* Used Primitives */ function addUsedPrimitive(primitive, symbol, selectHandler, deleteHandler) {
+    const usedPrimitivesBox = document.querySelector("#prim-used-box");
+    const primitiveEntry = document.createElement("div");
+    const primitiveIcon = document.createElement("img");
+    primitiveIcon.classList.add("image-icon");
+    primitiveIcon.src = primitive.url;
+    primitiveEntry.appendChild(primitiveIcon);
+    const deleteButton = document.createElement("button");
+    deleteButton.textContent = "Delete";
+    deleteButton.addEventListener("click", (ev)=>{
+        ev.stopPropagation();
+        deleteHandler(symbol);
+        primitiveEntry.remove();
+    });
+    primitiveEntry.appendChild(deleteButton);
+    primitiveEntry.classList.add("prim-entry");
+    primitiveEntry.addEventListener("click", ()=>{
+        selectHandler(symbol);
+    });
+    usedPrimitivesBox.appendChild(primitiveEntry);
+}
+/* Parameters */ function getControls() {
+    const sliderControls = {
+        distance: document.querySelector("#slider-distance"),
+        angle: document.querySelector("#slider-angle"),
+        rotation: document.querySelector("#slider-rotation"),
+        scale: document.querySelector("#slider-scale"),
+        multiplicity: document.querySelector("#slider-multiplicity")
+    };
+    const numberControls = {
+        distance: document.querySelector("#number-distance"),
+        angle: document.querySelector("#number-angle"),
+        rotation: document.querySelector("#number-rotation"),
+        scale: document.querySelector("#number-scale"),
+        multiplicity: document.querySelector("#number-multiplicity")
+    };
+    return [
+        sliderControls,
+        numberControls
+    ];
+}
+function setupControlsFor(parameter, { min, max, step, initial }, inputHandler) {
+    const [sliderControls, numberControls] = getControls();
+    [
+        sliderControls,
+        numberControls
+    ].forEach((controls)=>{
+        controls[parameter].min = min;
+        controls[parameter].max = max;
+        controls[parameter].step = step;
+        controls[parameter].value = initial;
+    });
+    sliderControls[parameter].addEventListener("input", (ev)=>{
+        inputHandler(+ev.target.value);
+    });
+    numberControls[parameter].addEventListener("input", (ev)=>{
+        ev.target.classList.remove("invalid");
+    });
+    numberControls[parameter].addEventListener("change", (ev)=>{
+        const value = parameter == "multiplicity" ? Number.parseInt(ev.target.value) : Number.parseFloat(ev.target.value);
+        if (Number.isFinite(value) && value >= min & value <= max) inputHandler(value);
+        else ev.target.classList.add("invalid");
+    });
+}
+function setupFlipToggle(handler) {
+    const flipCheckbox = document.querySelector("#checkbox-flip");
+    flipCheckbox.checked = false;
+    flipCheckbox.addEventListener("change", (ev)=>{
+        handler(ev.target.checked);
+    });
+}
+function showControls(flag = true) {
+    const controlSet = document.querySelector("#fieldset-controls");
+    if (flag) controlSet.classList.remove("hidden");
+    else controlSet.classList.add("hidden");
+}
+function updateControlsFor(parameterName, newValue) {
+    getControls().forEach((controls)=>{
+        controls[parameterName].value = newValue;
+    });
+}
+function updateFlipToggle(flag) {
+    const flipCheckbox = document.querySelector("#checkbox-flip");
+    console.log(flag);
+    flipCheckbox.checked = flag;
+}
+
+},{"./primitives.js":"9GoLL","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["8bDoD","3cYfC"], "3cYfC", "parcelRequiref046")
 
 //# sourceMappingURL=index.b8fca702.js.map
