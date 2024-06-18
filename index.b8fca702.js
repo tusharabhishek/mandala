@@ -591,7 +591,8 @@ var _primitivesJs = require("./primitives.js");
 var _primitivesJsDefault = parcelHelpers.interopDefault(_primitivesJs);
 var _stateJs = require("./state.js");
 var _uiJs = require("./ui.js");
-/* Setup state */ const order = 8;
+/* Setup state */ let order = 8;
+let invert = false;
 const parameters = [
     {
         name: "distance",
@@ -640,20 +641,32 @@ const mainCanvas = document.querySelector("#main-canvas");
 ];
 const selectionState = new (0, _stateJs.SelectionState)();
 const mandalaState = new (0, _stateJs.MandalaState)();
-const grid = new (0, _gridJsDefault.default)();
+let grid = new (0, _gridJsDefault.default)();
 grid.draw();
 /* Image */ /* Clear the canvas */ function clear(canvas) {
     const context = canvas.getContext("2d");
-    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.fillStyle = invert ? "black" : "white";
+    context.fillRect(0, 0, canvas.width, canvas.height);
 }
 /* Events */ /* Top-level drawing function */ let tick = 0;
 function draw() {
-    clear(mainCanvas);
-    grid.drawImageTo(mainCanvas, 0, 0);
-    mandalaState.drawImageTo(mainCanvas);
+    clear(mainCanvas, invert);
+    grid.drawImageTo(mainCanvas);
+    mandalaState.drawImageTo(mainCanvas, invert);
 }
 /* Setup UI when the page has loaded */ window.onload = function() {
     window.requestAnimationFrame(draw);
+    _uiJs.setupGridOrderControl((gridOrder)=>{
+        const answer = confirm("This will erase the existing mandala on the canvas. Do you want to continue?");
+        if (answer) {
+            const prevVisible = grid.visible;
+            grid = new (0, _gridJsDefault.default)(gridOrder, prevVisible);
+            order = gridOrder;
+            mandalaState.reset();
+            _uiJs.clearUsedPrimitives();
+            requestAnimationFrame(draw);
+        }
+    });
     _uiJs.setupGridToggle((flag)=>{
         grid.visible = flag;
         requestAnimationFrame(draw);
@@ -672,6 +685,11 @@ function draw() {
             downloadLink.click();
             document.body.removeChild(downloadLink);
         });
+    });
+    _uiJs.setupInvertControl((status)=>{
+        invert = status;
+        mandalaState.invertColor(status);
+        requestAnimationFrame(draw);
     });
     for(const id in 0, _primitivesJsDefault.default){
         function clickHandler() {
@@ -740,7 +758,7 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _helpersJs = require("./helpers.js");
 class Grid {
-    constructor(symOrder = 8, divisions = 12, radialInc = 10, orientation = 0, hue = 0, { canvasWidth = 800, canvasHeight = 800 } = {}){
+    constructor(symOrder = 8, visible = false, divisions = 12, radialInc = 10, orientation = 0, hue = 0, { canvasWidth = 800, canvasHeight = 800 } = {}){
         this.symOrder = symOrder; // order of symmetry
         this.divisions = divisions; // no. of divisions in a symmetric sector
         this.radialInc = radialInc; // difference in radii of concentric circles
@@ -751,7 +769,8 @@ class Grid {
         this.canvas = document.createElement("canvas");
         this.canvas.width = canvasWidth;
         this.canvas.height = canvasHeight;
-        this.visible = false;
+        this.visible = visible;
+        this.draw();
     }
     toggle(state) {
         if (state === undefined) this.visible = !this.visible;
@@ -775,7 +794,7 @@ class Grid {
         // minor axes
         for(let i = 0; i < this.symOrder * this.divisions; i++){
             context.save();
-            context.rotate((0, _helpersJs.toRad)(this.orientation) + (0, _helpersJs.toRad)(i * (360 / (this.symOrder * this.divisions))));
+            context.rotate((0, _helpersJs.toRad)(this.orientation - 90) + (0, _helpersJs.toRad)(i * (360 / (this.symOrder * this.divisions))));
             context.strokeStyle = `hwb(${this.hue} 50% 0%)`;
             context.beginPath();
             context.moveTo(0, 0);
@@ -787,8 +806,8 @@ class Grid {
         // major axes
         for(let i = 0; i < this.symOrder; i++){
             context.save();
-            context.rotate((0, _helpersJs.toRad)(this.orientation) + (0, _helpersJs.toRad)(i * (360 / this.symOrder)));
-            context.strokeStyle = `hwb(${this.hue} 0% 0%)`;
+            context.rotate((0, _helpersJs.toRad)(this.orientation - 90) + (0, _helpersJs.toRad)(i * (360 / this.symOrder)));
+            context.strokeStyle = `hwb(${this.hue} 0% 50%)`;
             context.beginPath();
             context.moveTo(0, 0);
             context.lineTo(this.canvas.width / 2, 0);
@@ -810,8 +829,12 @@ exports.default = Grid;
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "toRad", ()=>toRad);
+parcelHelpers.export(exports, "logicalXOR", ()=>logicalXOR);
 function toRad(deg) {
     return deg / 180 * Math.PI;
+}
+function logicalXOR(A, B) {
+    return A && !B || !A && B;
 }
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gkKU3":[function(require,module,exports) {
@@ -865,11 +888,12 @@ class Primitive {
             });
         });
     }
-    draw(canvas, { distance, angle, rotation, scale, order, multiplicity, flip, invert }) {
+    draw(canvas, { distance, angle, rotation, scale, order, multiplicity, flip, invert }, globalInvert) {
         if (!this.ready) return;
         const context = canvas.getContext("2d");
-        if (invert) context.filter = "invert(1)";
+        if ((0, _helpers.logicalXOR)(invert, globalInvert)) context.filter = "invert(1)";
         else context.filter = "none";
+        console.log((0, _helpers.logicalXOR)(invert, globalInvert));
         context.clearRect(0, 0, canvas.width, canvas.height);
         const totalOrder = Math.max(order * multiplicity, 1);
         for(let i = 0; i < totalOrder; ++i){
@@ -1572,6 +1596,7 @@ parcelHelpers.export(exports, "SelectionState", ()=>SelectionState);
 parcelHelpers.export(exports, "MandalaState", ()=>MandalaState);
 var _grid = require("./grid");
 var _gridDefault = parcelHelpers.interopDefault(_grid);
+var _helpers = require("./helpers");
 class SelectionState {
     constructor(){
         this.selectedPrimitive = null;
@@ -1588,6 +1613,10 @@ class MandalaState {
         this.primitiveGroup = new Map();
         this.canvasWidth = canvasWidth;
         this.canvasHeight = canvasHeight;
+        this.mandalaCanvas = document.querySelector("canvas");
+        this.mandalaCanvas.width = canvasWidth;
+        this.mandalaCanvas.height = canvasHeight;
+        this.globalInvert = false;
     }
     addPrimitive(symbol, primitive, { distance = 0.9, angle = 0, rotation = 0, scale = 0.1, order = 1, multiplicity = 1, flip = false, invert = false } = {}) {
         const offCanvas = document.createElement("canvas");
@@ -1607,7 +1636,7 @@ class MandalaState {
             },
             offCanvas
         });
-        drawPrimitive(this.primitiveGroup, symbol);
+        drawPrimitive(this.primitiveGroup, symbol, this.globalInvert);
     }
     removePrimitive(symbol) {
         return this.primitiveGroup.delete(symbol);
@@ -1627,7 +1656,16 @@ class MandalaState {
         newProps.flip = flip ?? oldProps.flip;
         newProps.invert = invert ?? oldProps.invert;
         this.primitiveGroup.get(symbol).props = newProps;
-        drawPrimitive(this.primitiveGroup, symbol);
+        drawPrimitive(this.primitiveGroup, symbol, this.globalInvert);
+    }
+    invertColor(status) {
+        this.globalInvert = status;
+        this.primitiveGroup.forEach((val, key)=>{
+            drawPrimitive(this.primitiveGroup, key, this.globalInvert);
+        });
+    }
+    reset() {
+        this.primitiveGroup = new Map();
     }
     drawImageTo(canvas) {
         const context = canvas.getContext("2d");
@@ -1636,9 +1674,9 @@ class MandalaState {
         });
     }
 }
-function drawPrimitive(primitives, symbol) {
+function drawPrimitive(primitives, symbol, globalInvert) {
     const { primitive, props, offCanvas } = primitives.get(symbol);
-    primitive.draw(offCanvas, props);
+    primitive.draw(offCanvas, props, globalInvert);
 }
 class AppState {
     constructor(canvasWidth, canvasHeight){
@@ -1697,7 +1735,7 @@ class AppState {
     removePrimitive(symbol) {
         return this.primitiveGroup.delete(symbol);
     }
-    draw(canvas) {
+    draw(canvas, invert) {
         const context = canvas.getContext("2d");
         this.primitiveGroup.forEach(({ offCanvas })=>{
             context.drawImage(offCanvas, 0, 0);
@@ -1705,7 +1743,7 @@ class AppState {
     }
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./grid":"7Jpqy"}],"aaZ0V":[function(require,module,exports) {
+},{"./grid":"7Jpqy","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./helpers":"luDvE"}],"aaZ0V":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "setupGridToggle", ()=>setupGridToggle);
@@ -1718,6 +1756,9 @@ parcelHelpers.export(exports, "updateFlipToggle", ()=>updateFlipToggle);
 parcelHelpers.export(exports, "showControls", ()=>showControls);
 parcelHelpers.export(exports, "setupInvertToggle", ()=>setupInvertToggle);
 parcelHelpers.export(exports, "updateInvertToggle", ()=>updateInvertToggle);
+parcelHelpers.export(exports, "setupGridOrderControl", ()=>setupGridOrderControl);
+parcelHelpers.export(exports, "clearUsedPrimitives", ()=>clearUsedPrimitives);
+parcelHelpers.export(exports, "setupInvertControl", ()=>setupInvertControl);
 var _primitivesJs = require("./primitives.js");
 var _primitivesJsDefault = parcelHelpers.interopDefault(_primitivesJs);
 /* Misc Controls */ function setupGridToggle(handler) {
@@ -1731,6 +1772,21 @@ function setupSaveButton(handler) {
     const saveButton = document.querySelector("#save-button");
     saveButton.addEventListener("click", (ev)=>{
         handler();
+    });
+}
+function setupGridOrderControl(handler) {
+    const orderButton = document.querySelector("#order-button");
+    orderButton.addEventListener("click", (ev)=>{
+        const orderSelect = document.querySelector("#grid-order");
+        const order = +orderSelect.value;
+        handler(order);
+    });
+}
+function setupInvertControl(handler) {
+    const invertToggle = document.querySelector("#invert-toggle");
+    invertToggle.checked = false;
+    invertToggle.addEventListener("change", (ev)=>{
+        handler(ev.target.checked);
     });
 }
 /* Add Primitives */ function addPrimitiveButton(primitive, clickHandler, selectionHandler, deletionHandler) {
@@ -1768,6 +1824,12 @@ function setupSaveButton(handler) {
         selectHandler(symbol);
     });
     usedPrimitivesBox.appendChild(primitiveEntry);
+}
+function clearUsedPrimitives() {
+    const usedPrimitivesBox = document.querySelector("#prim-used-box");
+    console.log(usedPrimitivesBox.children);
+    const length = usedPrimitivesBox.children.length;
+    for(let i = 0; i < length; i++)usedPrimitivesBox.children.item(0).remove();
 }
 /* Parameters */ function getControls() {
     const sliderControls = {
