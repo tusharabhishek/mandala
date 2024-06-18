@@ -1743,7 +1743,7 @@ class AppState {
     }
 }
 
-},{"./grid":"7Jpqy","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./helpers":"luDvE"}],"aaZ0V":[function(require,module,exports) {
+},{"./grid":"7Jpqy","./helpers":"luDvE","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"aaZ0V":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "setupGridToggle", ()=>setupGridToggle);
