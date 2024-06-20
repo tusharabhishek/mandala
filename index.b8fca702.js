@@ -591,8 +591,10 @@ var _primitivesJs = require("./primitives.js");
 var _primitivesJsDefault = parcelHelpers.interopDefault(_primitivesJs);
 var _stateJs = require("./state.js");
 var _uiJs = require("./ui.js");
+var _helpersJs = require("./helpers.js");
 /* Setup state */ let order = 8;
 let invert = false;
+let showIDs = false;
 const parameters = [
     {
         name: "distance",
@@ -641,6 +643,7 @@ const mainCanvas = document.querySelector("#main-canvas");
 ];
 const selectionState = new (0, _stateJs.SelectionState)();
 const mandalaState = new (0, _stateJs.MandalaState)();
+const getID = (0, _helpersJs.createSerialIDGenerator)();
 let grid = new (0, _gridJsDefault.default)();
 grid.draw();
 /* Image */ /* Clear the canvas */ function clear(canvas) {
@@ -664,6 +667,7 @@ function draw() {
             order = gridOrder;
             mandalaState.reset();
             _uiJs.clearUsedPrimitives();
+            _uiJs.showControls(false);
             requestAnimationFrame(draw);
         }
     });
@@ -691,9 +695,14 @@ function draw() {
         mandalaState.invertColor(status);
         requestAnimationFrame(draw);
     });
+    _uiJs.setupIDCheckbox((status)=>{
+        showIDs = status;
+        mandalaState.showIDs(status);
+        requestAnimationFrame(draw);
+    });
     for(const id in 0, _primitivesJsDefault.default){
         function clickHandler() {
-            const symbol = Symbol();
+            const symbol = getID();
             mandalaState.addPrimitive(symbol, (0, _primitivesJsDefault.default)[id], {
                 order
             });
@@ -753,7 +762,7 @@ function draw() {
     requestAnimationFrame(draw);
 }
 
-},{"./grid.js":"7Jpqy","./primitives.js":"9GoLL","./state.js":"2DgWL","./ui.js":"aaZ0V","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"7Jpqy":[function(require,module,exports) {
+},{"./grid.js":"7Jpqy","./primitives.js":"9GoLL","./state.js":"2DgWL","./ui.js":"aaZ0V","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./helpers.js":"luDvE"}],"7Jpqy":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _helpersJs = require("./helpers.js");
@@ -830,11 +839,18 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "toRad", ()=>toRad);
 parcelHelpers.export(exports, "logicalXOR", ()=>logicalXOR);
+parcelHelpers.export(exports, "createSerialIDGenerator", ()=>createSerialIDGenerator);
 function toRad(deg) {
     return deg / 180 * Math.PI;
 }
 function logicalXOR(A, B) {
     return A && !B || !A && B;
+}
+function createSerialIDGenerator(start = 1) {
+    let id = start;
+    return function() {
+        return id++;
+    };
 }
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gkKU3":[function(require,module,exports) {
@@ -888,12 +904,11 @@ class Primitive {
             });
         });
     }
-    draw(canvas, { distance, angle, rotation, scale, order, multiplicity, flip, invert }, globalInvert) {
+    draw(canvas, { distance, angle, rotation, scale, order, multiplicity, flip, invert }, globalInvert, showIDs, symbol) {
         if (!this.ready) return;
         const context = canvas.getContext("2d");
         if ((0, _helpers.logicalXOR)(invert, globalInvert)) context.filter = "invert(1)";
         else context.filter = "none";
-        console.log((0, _helpers.logicalXOR)(invert, globalInvert));
         context.clearRect(0, 0, canvas.width, canvas.height);
         const totalOrder = Math.max(order * multiplicity, 1);
         for(let i = 0; i < totalOrder; ++i){
@@ -908,6 +923,21 @@ class Primitive {
             context.translate(-this.imageData.width / 2, -this.imageData.height / 2); // offset so that image is drawn at center
             context.drawImage(this.imageData, 0, 0);
             context.restore();
+            if (showIDs) {
+                context.font = "bold 16px sans-serif";
+                context.textAlign = "center";
+                context.textBaseline = "middle";
+                context.fillStyle = "red";
+                context.shadowColor = "white";
+                context.shadowBlur = 8;
+                context.save();
+                context.translate(canvas.width / 2, canvas.height / 2); // translate to center
+                context.rotate((0, _helpers.toRad)(-90 + nextAngle)); // rotate about the center (of the canvas)
+                context.translate(distance * canvas.width / 2, 0); // move given distance away from the center
+                context.rotate((0, _helpers.toRad)(90 - nextAngle)); // rotate about the new center (of the object)
+                context.fillText(symbol, 0, 0);
+                context.restore();
+            }
         }
     }
 }
@@ -1617,6 +1647,7 @@ class MandalaState {
         this.mandalaCanvas.width = canvasWidth;
         this.mandalaCanvas.height = canvasHeight;
         this.globalInvert = false;
+        this.IDsVisible = false;
     }
     addPrimitive(symbol, primitive, { distance = 0.9, angle = 0, rotation = 0, scale = 0.1, order = 1, multiplicity = 1, flip = false, invert = false } = {}) {
         const offCanvas = document.createElement("canvas");
@@ -1632,11 +1663,12 @@ class MandalaState {
                 order,
                 multiplicity,
                 flip,
-                invert
+                invert,
+                id: symbol
             },
             offCanvas
         });
-        drawPrimitive(this.primitiveGroup, symbol, this.globalInvert);
+        drawPrimitive(this.primitiveGroup, symbol, this.globalInvert, this.IDsVisible);
     }
     removePrimitive(symbol) {
         return this.primitiveGroup.delete(symbol);
@@ -1656,12 +1688,18 @@ class MandalaState {
         newProps.flip = flip ?? oldProps.flip;
         newProps.invert = invert ?? oldProps.invert;
         this.primitiveGroup.get(symbol).props = newProps;
-        drawPrimitive(this.primitiveGroup, symbol, this.globalInvert);
+        drawPrimitive(this.primitiveGroup, symbol, this.globalInvert, this.IDsVisible);
     }
     invertColor(status) {
         this.globalInvert = status;
         this.primitiveGroup.forEach((val, key)=>{
-            drawPrimitive(this.primitiveGroup, key, this.globalInvert);
+            drawPrimitive(this.primitiveGroup, key, this.globalInvert, this.IDsVisible);
+        });
+    }
+    showIDs(status) {
+        this.IDsVisible = status;
+        this.primitiveGroup.forEach((val, key)=>{
+            drawPrimitive(this.primitiveGroup, key, this.globalInvert, this.IDsVisible);
         });
     }
     reset() {
@@ -1674,9 +1712,9 @@ class MandalaState {
         });
     }
 }
-function drawPrimitive(primitives, symbol, globalInvert) {
+function drawPrimitive(primitives, symbol, globalInvert, showIDs) {
     const { primitive, props, offCanvas } = primitives.get(symbol);
-    primitive.draw(offCanvas, props, globalInvert);
+    primitive.draw(offCanvas, props, globalInvert, showIDs, symbol);
 }
 class AppState {
     constructor(canvasWidth, canvasHeight){
@@ -1759,6 +1797,7 @@ parcelHelpers.export(exports, "updateInvertToggle", ()=>updateInvertToggle);
 parcelHelpers.export(exports, "setupGridOrderControl", ()=>setupGridOrderControl);
 parcelHelpers.export(exports, "clearUsedPrimitives", ()=>clearUsedPrimitives);
 parcelHelpers.export(exports, "setupInvertControl", ()=>setupInvertControl);
+parcelHelpers.export(exports, "setupIDCheckbox", ()=>setupIDCheckbox);
 var _primitivesJs = require("./primitives.js");
 var _primitivesJsDefault = parcelHelpers.interopDefault(_primitivesJs);
 /* Misc Controls */ function setupGridToggle(handler) {
@@ -1789,6 +1828,13 @@ function setupInvertControl(handler) {
         handler(ev.target.checked);
     });
 }
+function setupIDCheckbox(handler) {
+    const showIDToggle = document.querySelector("#checkbox-show-id");
+    showIDToggle.checked = false;
+    showIDToggle.addEventListener("change", (ev)=>{
+        handler(ev.target.checked);
+    });
+}
 /* Add Primitives */ function addPrimitiveButton(primitive, clickHandler, selectionHandler, deletionHandler) {
     const primitiveOptionBox = document.querySelector("#prim-option-box");
     const primitiveButton = document.createElement("button");
@@ -1811,6 +1857,9 @@ function setupInvertControl(handler) {
     primitiveIcon.classList.add("image-icon");
     primitiveIcon.src = primitive.url;
     primitiveEntry.appendChild(primitiveIcon);
+    const symbolSpan = document.createElement("span");
+    symbolSpan.textContent = `ID: ${symbol}`;
+    primitiveEntry.appendChild(symbolSpan);
     const deleteButton = document.createElement("button");
     deleteButton.textContent = "Delete";
     deleteButton.addEventListener("click", (ev)=>{
@@ -1827,7 +1876,6 @@ function setupInvertControl(handler) {
 }
 function clearUsedPrimitives() {
     const usedPrimitivesBox = document.querySelector("#prim-used-box");
-    console.log(usedPrimitivesBox.children);
     const length = usedPrimitivesBox.children.length;
     for(let i = 0; i < length; i++)usedPrimitivesBox.children.item(0).remove();
 }
