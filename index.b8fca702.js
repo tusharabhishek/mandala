@@ -622,7 +622,7 @@ const parameters = [
         min: "0",
         max: "1",
         step: "0.001",
-        initial: "0.1"
+        initial: "0.25"
     },
     {
         name: "multiplicity",
@@ -642,7 +642,7 @@ const mainCanvas = document.querySelector("#main-canvas");
     canvasHeight
 ];
 const selectionState = new (0, _stateJs.SelectionState)();
-const mandalaState = new (0, _stateJs.MandalaState)();
+let mandalaState = new (0, _stateJs.MandalaState)();
 const getID = (0, _helpersJs.createSerialIDGenerator)();
 let grid = new (0, _gridJsDefault.default)();
 grid.draw();
@@ -665,7 +665,7 @@ function draw() {
             const prevVisible = grid.visible;
             grid = new (0, _gridJsDefault.default)(gridOrder, prevVisible);
             order = gridOrder;
-            mandalaState.reset();
+            mandalaState = new (0, _stateJs.MandalaState)(gridOrder);
             _uiJs.clearUsedPrimitives();
             _uiJs.showControls(false);
             requestAnimationFrame(draw);
@@ -682,13 +682,32 @@ function draw() {
         mandalaState.drawImageTo(saveCanvas);
         saveCanvas.toBlob((blob)=>{
             const downloadLink = document.createElement("a");
-            downloadLink.href = URL.createObjectURL(blob);
+            const downloadURL = URL.createObjectURL(blob);
+            downloadLink.href = downloadURL;
             downloadLink.download = "mandala.png";
             downloadLink.classList.add("hidden");
             document.body.appendChild(downloadLink);
             downloadLink.click();
             document.body.removeChild(downloadLink);
+            URL.revokeObjectURL(downloadURL);
         });
+    });
+    _uiJs.setupSaveSerialButton(()=>{
+        const blob = new Blob([
+            mandalaState.getPrimitiveStateAsJSON()
+        ], {
+            type: "application/json",
+            endings: "native"
+        });
+        const downloadLink = document.createElement("a");
+        const downloadURL = URL.createObjectURL(blob);
+        downloadLink.href = downloadURL;
+        downloadLink.download = "mandala.json";
+        downloadLink.classList.add("hidden");
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+        URL.revokeObjectURL(downloadURL);
     });
     _uiJs.setupInvertControl((status)=>{
         invert = status;
@@ -703,9 +722,7 @@ function draw() {
     for(const id in 0, _primitivesJsDefault.default){
         function clickHandler() {
             const symbol = getID();
-            mandalaState.addPrimitive(symbol, (0, _primitivesJsDefault.default)[id], {
-                order
-            });
+            mandalaState.addPrimitive(symbol, (0, _primitivesJsDefault.default)[id]);
             changeSelection(symbol);
             return symbol;
         }
@@ -762,7 +779,7 @@ function draw() {
     requestAnimationFrame(draw);
 }
 
-},{"./grid.js":"7Jpqy","./primitives.js":"9GoLL","./state.js":"2DgWL","./ui.js":"aaZ0V","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./helpers.js":"luDvE"}],"7Jpqy":[function(require,module,exports) {
+},{"./grid.js":"7Jpqy","./primitives.js":"9GoLL","./state.js":"2DgWL","./ui.js":"aaZ0V","./helpers.js":"luDvE","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"7Jpqy":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _helpersJs = require("./helpers.js");
@@ -937,6 +954,7 @@ class Primitive {
                 context.rotate((0, _helpers.toRad)(90 - nextAngle)); // rotate about the new center (of the object)
                 context.fillText(symbol, 0, 0);
                 context.restore();
+                context.shadowBlur = 0;
             }
         }
     }
@@ -966,163 +984,121 @@ exports.default = primitives;
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 const imageURLs = {};
-imageURLs[1] = new URL(require("c2eef0de058c740d"));
-imageURLs[2] = new URL(require("52a7a861fda9f30b"));
-imageURLs[3] = new URL(require("9c18ef670372a950"));
-imageURLs[4] = new URL(require("9cb9b835c8aecf1e"));
-imageURLs[5] = new URL(require("4e7685da53edcdb2"));
-imageURLs[6] = new URL(require("7dfad34e076d902a"));
-imageURLs[7] = new URL(require("e6b69140c90bc1ac"));
-imageURLs[8] = new URL(require("8d0f2d7300b372dc"));
-imageURLs[9] = new URL(require("b6486eecfa6dd0c"));
-imageURLs[10] = new URL(require("9c484782eeeb396f"));
-imageURLs[11] = new URL(require("92e2dcdb599e0e86"));
-imageURLs[12] = new URL(require("d52baa4075fb2b3"));
-imageURLs[13] = new URL(require("6062f456d781d0cb"));
-imageURLs[14] = new URL(require("5ed07d784ed75992"));
-imageURLs[15] = new URL(require("1a62b5c043c2fad6"));
-imageURLs[16] = new URL(require("99101774e61f2692"));
-imageURLs[17] = new URL(require("4861c5c899050042"));
-imageURLs[18] = new URL(require("28a2665c49a6300"));
-imageURLs[19] = new URL(require("11b8569b0e6d4678"));
-imageURLs[20] = new URL(require("921e796bcaa4ce5d"));
-imageURLs[21] = new URL(require("5b48a9e2d2dc19f7"));
-imageURLs[22] = new URL(require("c9ef71e630295927"));
-imageURLs[23] = new URL(require("8f33d966f5fbb7ac"));
-imageURLs[24] = new URL(require("eb88667065e3cf00"));
-imageURLs[25] = new URL(require("36aafb8798b994a2"));
-imageURLs[26] = new URL(require("c02b5382e379fe35"));
-imageURLs[27] = new URL(require("a28f62b1ecb9edad"));
-imageURLs[28] = new URL(require("d8294d38c186241f"));
-imageURLs[29] = new URL(require("77d67807a0769154"));
-imageURLs[30] = new URL(require("69a7031e495f7be0"));
-imageURLs[31] = new URL(require("ca5bd563d3e72b8d"));
-imageURLs[32] = new URL(require("a811b18f1c0bb33a"));
-imageURLs[33] = new URL(require("88e40d88b661dd4b"));
-imageURLs[34] = new URL(require("9bf4dae99eaef48c"));
-imageURLs[35] = new URL(require("4be596869190e41b"));
-imageURLs[36] = new URL(require("e73aafba07ea7b67"));
-imageURLs[37] = new URL(require("94ff87e1c79456f"));
-imageURLs[39] = new URL(require("98420d767ed21275"));
-imageURLs[40] = new URL(require("c7de6fb8246c75a9"));
-imageURLs[41] = new URL(require("df791106f119ec62"));
-imageURLs[42] = new URL(require("9736b820bbd18588"));
-imageURLs[43] = new URL(require("ad45e95ea0806af9"));
-imageURLs["primitives-1-100dpi-001"] = new URL(require("7b5c8aec72525cee"));
-imageURLs["primitives-1-100dpi-002"] = new URL(require("607ccc0d6f9c9abb"));
-imageURLs["primitives-1-100dpi-003"] = new URL(require("1b32caa41e0f6577"));
-imageURLs["primitives-1-100dpi-004"] = new URL(require("2d7d84a335812f1"));
-imageURLs["primitives-1-100dpi-005"] = new URL(require("5799805c371b5d87"));
-imageURLs["primitives-1-100dpi-006"] = new URL(require("573225369e2773d"));
-imageURLs["primitives-1-100dpi-007"] = new URL(require("1ec50ab038cc735e"));
-imageURLs["primitives-1-100dpi-008"] = new URL(require("4b9f4f0fc50194e0"));
-imageURLs["primitives-1-100dpi-009"] = new URL(require("84a0aadb15bc67aa"));
-imageURLs["primitives-1-100dpi-010"] = new URL(require("209300ede3fc1eed"));
-imageURLs["primitives-1-100dpi-011"] = new URL(require("4a8265315ad7548"));
-imageURLs["primitives-1-100dpi-012"] = new URL(require("468d63721d0dc4c4"));
-imageURLs["primitives-1-100dpi-013"] = new URL(require("6a4a87679b6896dd"));
-imageURLs["primitives-1-100dpi-014"] = new URL(require("65e64b9263edad05"));
-imageURLs["primitives-1-100dpi-015"] = new URL(require("52e6f81be1a471c5"));
-imageURLs["primitives-1-100dpi-016"] = new URL(require("fb9f4659004ff5d5"));
-imageURLs["primitives-1-100dpi-017"] = new URL(require("d30d35e71a85209"));
-imageURLs["primitives-1-100dpi-018"] = new URL(require("68b7e1bebf2097ae"));
-imageURLs["primitives-1-100dpi-019"] = new URL(require("a685d680f598422b"));
-imageURLs["primitives-1-100dpi-020"] = new URL(require("31000596897051de"));
-imageURLs["primitives-1-100dpi-021"] = new URL(require("95752395992dddd6"));
-imageURLs["primitives-1-100dpi-022"] = new URL(require("11e1a1f996ad7e2f"));
-imageURLs["primitives-1-100dpi-023"] = new URL(require("532099c0c308747"));
-imageURLs["primitives-1-100dpi-024"] = new URL(require("b3dc15c3f22de212"));
-imageURLs["primitives-1-100dpi-025"] = new URL(require("a7346ac7f8e2cc03"));
-imageURLs["primitives-1-100dpi-026"] = new URL(require("2829f0dbb2a2777d"));
-imageURLs["primitives-1-100dpi-027"] = new URL(require("21d5815bd90aa016"));
-imageURLs["primitives-1-100dpi-028"] = new URL(require("55788031b6a6375f"));
-imageURLs["primitives-1-100dpi-029"] = new URL(require("885a4f5857f7f7ab"));
-imageURLs["primitives-1-100dpi-030"] = new URL(require("d73aebd27393f307"));
-imageURLs["primitives-1-100dpi-031"] = new URL(require("29677a704976100b"));
-imageURLs["primitives-1-100dpi-032"] = new URL(require("6ad2f3a73ad99f72"));
-imageURLs["primitives-1-100dpi-033"] = new URL(require("1e7735de066ba088"));
-imageURLs["primitives-1-100dpi-034"] = new URL(require("565b47e862b7490b"));
-imageURLs["primitives-1-100dpi-035"] = new URL(require("e894bf06f0f7eff0"));
-imageURLs["primitives-1-100dpi-036"] = new URL(require("a4e82a569a826175"));
-imageURLs["primitives-1-100dpi-037"] = new URL(require("345ac8a0644bb523"));
-imageURLs["primitives-1-100dpi-038"] = new URL(require("93fc3d9d354e6d29"));
-imageURLs["primitives-1-100dpi-039"] = new URL(require("7716d785ce14c8ab"));
-imageURLs["primitives-1-100dpi-040"] = new URL(require("6ac9ba8795e143db"));
-imageURLs["primitives-1-100dpi-041"] = new URL(require("922abc82b2b7e96"));
-imageURLs["primitives-1-100dpi-042"] = new URL(require("fcace8deb1937e44"));
-imageURLs["primitives-1-100dpi-043"] = new URL(require("7d86031227543e9a"));
-imageURLs["primitives-1-100dpi-044"] = new URL(require("b2c861539e25799d"));
-imageURLs["primitives-1-100dpi-045"] = new URL(require("be43a89cc5fd54dd"));
-imageURLs["primitives-1-100dpi-046"] = new URL(require("8f3cff687936ea88"));
-imageURLs["primitives-1-100dpi-047"] = new URL(require("5e6da069fd9f5bfb"));
-imageURLs["primitives-1-100dpi-048"] = new URL(require("59abab5b8ddc20cf"));
-imageURLs["primitives-1-100dpi-049"] = new URL(require("7d50eb0b0567ebe5"));
-imageURLs["primitives-1-100dpi-050"] = new URL(require("f992c19d0b44969b"));
-imageURLs["primitives-1-100dpi-051"] = new URL(require("506f5c8e3cda1ae9"));
-imageURLs["primitives-1-100dpi-052"] = new URL(require("6f1425e38daddcd2"));
-imageURLs["primitives-1-100dpi-053"] = new URL(require("95b5496854977a97"));
-imageURLs["primitives-1-100dpi-054"] = new URL(require("2c861e4d984de5f4"));
-imageURLs["primitives-1-100dpi-055"] = new URL(require("94924a1c3d9e026b"));
-imageURLs["primitives-1-100dpi-056"] = new URL(require("52c0daa1072b057d"));
-imageURLs["primitives-1-100dpi-057"] = new URL(require("3de92f22a2bcb400"));
-imageURLs["primitives-1-100dpi-058"] = new URL(require("a0fc874eba68ac64"));
-imageURLs["primitives-1-100dpi-059"] = new URL(require("94337850aab88138"));
-imageURLs["primitives-1-100dpi-060"] = new URL(require("a45fb3ba009b2008"));
-imageURLs["primitives-1-100dpi-061"] = new URL(require("54caf452294a8469"));
-imageURLs["primitives-1-100dpi-062"] = new URL(require("885e4f058d714077"));
-imageURLs["primitives-1-100dpi-063"] = new URL(require("5b4e830d37807187"));
-imageURLs["primitives-1-100dpi-064"] = new URL(require("e4a33b80a5420176"));
-imageURLs["primitives-1-100dpi-065"] = new URL(require("d8158b49ad8aedfb"));
-imageURLs["primitives-1-100dpi-066"] = new URL(require("6a92cbf28e84c958"));
-imageURLs["primitives-1-100dpi-067"] = new URL(require("7ff49150aacea561"));
-imageURLs["primitives-1-100dpi-068"] = new URL(require("b382a06638f9aebe"));
-imageURLs["primitives-1-100dpi-069"] = new URL(require("3c6022a2163b5c7"));
-imageURLs["primitives-1-100dpi-070"] = new URL(require("d9e697e4afd54faa"));
-imageURLs["primitives-1-100dpi-071"] = new URL(require("6fed1e9d81c47666"));
-imageURLs["primitives-1-100dpi-072"] = new URL(require("920998b7669d477e"));
-imageURLs["primitives-1-100dpi-073"] = new URL(require("834f792d9b829eab"));
-imageURLs["primitives-1-100dpi-074"] = new URL(require("3eaad3ec6c786425"));
-imageURLs["primitives-1-100dpi-075"] = new URL(require("3994b10cc0acf36f"));
-imageURLs["primitives-1-100dpi-076"] = new URL(require("53fdf971d1aecf2d"));
-imageURLs["primitives-1-100dpi-077"] = new URL(require("e92f7f900995c96b"));
-imageURLs["primitives-1-100dpi-078"] = new URL(require("7a241e6a4b0008c4"));
-imageURLs["primitives-1-100dpi-079"] = new URL(require("674da81f6164ba63"));
-imageURLs["primitives-1-100dpi-080"] = new URL(require("8795b4d2f4424fc6"));
-imageURLs["primitives-1-100dpi-081"] = new URL(require("c5551f44f03fb58c"));
-imageURLs["primitives-1-100dpi-082"] = new URL(require("bd5d5a5a9e46911b"));
-imageURLs["primitives-1-100dpi-083"] = new URL(require("3381657559ee58cb"));
-imageURLs["primitives-1-100dpi-084"] = new URL(require("aead84aa3075fb9e"));
-imageURLs["primitives-1-100dpi-085"] = new URL(require("df7ea6e72a001022"));
-imageURLs["primitives-1-100dpi-086"] = new URL(require("a0c56fa4bd592df5"));
-imageURLs["primitives-1-100dpi-087"] = new URL(require("db86e1b83fd2e867"));
-imageURLs["primitives-1-100dpi-088"] = new URL(require("646dd6aa3e7baec7"));
-imageURLs["primitives-1-100dpi-089"] = new URL(require("de8301d1469110c8"));
-imageURLs["primitives-1-100dpi-090"] = new URL(require("28b823a4382966c2"));
-imageURLs["primitives-1-100dpi-091"] = new URL(require("82710c054670a0be"));
-imageURLs["primitives-1-100dpi-092"] = new URL(require("ffdbbe618b7d7ff7"));
-imageURLs["primitives-1-100dpi-093"] = new URL(require("a3b674069d6ad29e"));
-imageURLs["primitives-1-100dpi-094"] = new URL(require("62968e1769b1b799"));
-imageURLs["primitives-1-100dpi-095"] = new URL(require("867b70692f378d44"));
-imageURLs["primitives-1-100dpi-096"] = new URL(require("28b30b0a3e6f2a33"));
-imageURLs["primitives-1-100dpi-097"] = new URL(require("91f6e08b1cb0a3ca"));
-imageURLs["primitives-1-100dpi-098"] = new URL(require("b9922aaf7194ffd0"));
-imageURLs["primitives-1-100dpi-099"] = new URL(require("edf13e035baa2608"));
-imageURLs["primitives-1-100dpi-100"] = new URL(require("81fa6c02edc52e80"));
-imageURLs["primitives-1-100dpi-101"] = new URL(require("66b639cab4122cb4"));
-imageURLs["primitives-1-100dpi-102"] = new URL(require("3aa39433380e1f5f"));
-imageURLs["primitives-1-100dpi-103"] = new URL(require("4c6f5485682c6913"));
-imageURLs["primitives-1-100dpi-104"] = new URL(require("4786bf7064742c34"));
-imageURLs["primitives-1-100dpi-105"] = new URL(require("bbe5f6b09bbe4704"));
-imageURLs["primitives-1-100dpi-106"] = new URL(require("b0936c07c9988a10"));
-imageURLs["primitives-1-100dpi-107"] = new URL(require("88a631e80de1136f"));
-imageURLs["primitives-1-100dpi-108"] = new URL(require("1c8672376f85595e"));
-imageURLs["primitives-1-100dpi-109"] = new URL(require("eec0d72e05df8a33"));
-imageURLs["primitives-1-100dpi-110"] = new URL(require("7f8143bf2596c95a"));
-imageURLs["primitives-1-100dpi-111"] = new URL(require("681de2fe4a7d923f"));
-imageURLs["primitives-1-100dpi-112"] = new URL(require("ef06d35ce265ff23"));
+imageURLs[1] = new URL(require("7b5c8aec72525cee"));
+imageURLs[2] = new URL(require("607ccc0d6f9c9abb"));
+imageURLs[3] = new URL(require("1b32caa41e0f6577"));
+imageURLs[4] = new URL(require("2d7d84a335812f1"));
+imageURLs[5] = new URL(require("5799805c371b5d87"));
+imageURLs[6] = new URL(require("573225369e2773d"));
+imageURLs[7] = new URL(require("1ec50ab038cc735e"));
+imageURLs[8] = new URL(require("4b9f4f0fc50194e0"));
+imageURLs[9] = new URL(require("84a0aadb15bc67aa"));
+imageURLs[10] = new URL(require("209300ede3fc1eed"));
+imageURLs[11] = new URL(require("4a8265315ad7548"));
+imageURLs[12] = new URL(require("468d63721d0dc4c4"));
+imageURLs[13] = new URL(require("6a4a87679b6896dd"));
+imageURLs[14] = new URL(require("65e64b9263edad05"));
+imageURLs[15] = new URL(require("52e6f81be1a471c5"));
+imageURLs[16] = new URL(require("fb9f4659004ff5d5"));
+imageURLs[17] = new URL(require("d30d35e71a85209"));
+imageURLs[18] = new URL(require("68b7e1bebf2097ae"));
+imageURLs[19] = new URL(require("a685d680f598422b"));
+imageURLs[20] = new URL(require("31000596897051de"));
+imageURLs[21] = new URL(require("95752395992dddd6"));
+imageURLs[22] = new URL(require("11e1a1f996ad7e2f"));
+imageURLs[23] = new URL(require("532099c0c308747"));
+imageURLs[24] = new URL(require("b3dc15c3f22de212"));
+imageURLs[25] = new URL(require("a7346ac7f8e2cc03"));
+imageURLs[26] = new URL(require("2829f0dbb2a2777d"));
+imageURLs[27] = new URL(require("21d5815bd90aa016"));
+imageURLs[28] = new URL(require("55788031b6a6375f"));
+imageURLs[29] = new URL(require("885a4f5857f7f7ab"));
+imageURLs[30] = new URL(require("d73aebd27393f307"));
+imageURLs[31] = new URL(require("29677a704976100b"));
+imageURLs[32] = new URL(require("6ad2f3a73ad99f72"));
+imageURLs[33] = new URL(require("1e7735de066ba088"));
+imageURLs[34] = new URL(require("565b47e862b7490b"));
+imageURLs[35] = new URL(require("e894bf06f0f7eff0"));
+imageURLs[36] = new URL(require("a4e82a569a826175"));
+imageURLs[37] = new URL(require("345ac8a0644bb523"));
+imageURLs[38] = new URL(require("93fc3d9d354e6d29"));
+imageURLs[39] = new URL(require("7716d785ce14c8ab"));
+imageURLs[40] = new URL(require("6ac9ba8795e143db"));
+imageURLs[41] = new URL(require("922abc82b2b7e96"));
+imageURLs[42] = new URL(require("fcace8deb1937e44"));
+imageURLs[43] = new URL(require("7d86031227543e9a"));
+imageURLs[44] = new URL(require("b2c861539e25799d"));
+imageURLs[45] = new URL(require("be43a89cc5fd54dd"));
+imageURLs[46] = new URL(require("8f3cff687936ea88"));
+imageURLs[47] = new URL(require("5e6da069fd9f5bfb"));
+imageURLs[48] = new URL(require("59abab5b8ddc20cf"));
+imageURLs[49] = new URL(require("7d50eb0b0567ebe5"));
+imageURLs[50] = new URL(require("f992c19d0b44969b"));
+imageURLs[51] = new URL(require("506f5c8e3cda1ae9"));
+imageURLs[52] = new URL(require("6f1425e38daddcd2"));
+imageURLs[53] = new URL(require("95b5496854977a97"));
+imageURLs[54] = new URL(require("2c861e4d984de5f4"));
+imageURLs[55] = new URL(require("94924a1c3d9e026b"));
+imageURLs[56] = new URL(require("52c0daa1072b057d"));
+imageURLs[57] = new URL(require("3de92f22a2bcb400"));
+imageURLs[58] = new URL(require("a0fc874eba68ac64"));
+imageURLs[59] = new URL(require("94337850aab88138"));
+imageURLs[60] = new URL(require("a45fb3ba009b2008"));
+imageURLs[61] = new URL(require("54caf452294a8469"));
+imageURLs[62] = new URL(require("885e4f058d714077"));
+imageURLs[63] = new URL(require("5b4e830d37807187"));
+imageURLs[64] = new URL(require("e4a33b80a5420176"));
+imageURLs[65] = new URL(require("d8158b49ad8aedfb"));
+imageURLs[66] = new URL(require("6a92cbf28e84c958"));
+imageURLs[67] = new URL(require("7ff49150aacea561"));
+imageURLs[68] = new URL(require("b382a06638f9aebe"));
+imageURLs[69] = new URL(require("3c6022a2163b5c7"));
+imageURLs[70] = new URL(require("d9e697e4afd54faa"));
+imageURLs[71] = new URL(require("6fed1e9d81c47666"));
+imageURLs[72] = new URL(require("920998b7669d477e"));
+imageURLs[73] = new URL(require("834f792d9b829eab"));
+imageURLs[74] = new URL(require("3eaad3ec6c786425"));
+imageURLs[75] = new URL(require("3994b10cc0acf36f"));
+imageURLs[76] = new URL(require("53fdf971d1aecf2d"));
+imageURLs[77] = new URL(require("e92f7f900995c96b"));
+imageURLs[78] = new URL(require("7a241e6a4b0008c4"));
+imageURLs[79] = new URL(require("674da81f6164ba63"));
+imageURLs[80] = new URL(require("8795b4d2f4424fc6"));
+imageURLs[81] = new URL(require("c5551f44f03fb58c"));
+imageURLs[82] = new URL(require("bd5d5a5a9e46911b"));
+imageURLs[83] = new URL(require("3381657559ee58cb"));
+imageURLs[84] = new URL(require("aead84aa3075fb9e"));
+imageURLs[85] = new URL(require("df7ea6e72a001022"));
+imageURLs[86] = new URL(require("a0c56fa4bd592df5"));
+imageURLs[87] = new URL(require("db86e1b83fd2e867"));
+imageURLs[88] = new URL(require("646dd6aa3e7baec7"));
+imageURLs[89] = new URL(require("de8301d1469110c8"));
+imageURLs[90] = new URL(require("28b823a4382966c2"));
+imageURLs[91] = new URL(require("82710c054670a0be"));
+imageURLs[92] = new URL(require("ffdbbe618b7d7ff7"));
+imageURLs[93] = new URL(require("a3b674069d6ad29e"));
+imageURLs[94] = new URL(require("62968e1769b1b799"));
+imageURLs[95] = new URL(require("867b70692f378d44"));
+imageURLs[96] = new URL(require("28b30b0a3e6f2a33"));
+imageURLs[97] = new URL(require("91f6e08b1cb0a3ca"));
+imageURLs[98] = new URL(require("b9922aaf7194ffd0"));
+imageURLs[99] = new URL(require("edf13e035baa2608"));
+imageURLs[100] = new URL(require("81fa6c02edc52e80"));
+imageURLs[101] = new URL(require("66b639cab4122cb4"));
+imageURLs[102] = new URL(require("3aa39433380e1f5f"));
+imageURLs[103] = new URL(require("4c6f5485682c6913"));
+imageURLs[104] = new URL(require("4786bf7064742c34"));
+imageURLs[105] = new URL(require("bbe5f6b09bbe4704"));
+imageURLs[106] = new URL(require("b0936c07c9988a10"));
+imageURLs[107] = new URL(require("88a631e80de1136f"));
+imageURLs[108] = new URL(require("1c8672376f85595e"));
+imageURLs[109] = new URL(require("eec0d72e05df8a33"));
+imageURLs[110] = new URL(require("7f8143bf2596c95a"));
+imageURLs[111] = new URL(require("681de2fe4a7d923f"));
+imageURLs[112] = new URL(require("ef06d35ce265ff23"));
 exports.default = imageURLs;
 
-},{"7b5c8aec72525cee":"lKxjm","607ccc0d6f9c9abb":"9T3Vb","1b32caa41e0f6577":"4HQoo","2d7d84a335812f1":"5YiBG","5799805c371b5d87":"k5ySQ","573225369e2773d":"fDoMT","1ec50ab038cc735e":"9KR83","4b9f4f0fc50194e0":"jWDdN","84a0aadb15bc67aa":"aVA6M","209300ede3fc1eed":"44CBM","4a8265315ad7548":"4cYMm","468d63721d0dc4c4":"aiWbD","6a4a87679b6896dd":"ae1BM","65e64b9263edad05":"bSCL0","52e6f81be1a471c5":"f1dRX","fb9f4659004ff5d5":"b90gY","d30d35e71a85209":"813Mq","68b7e1bebf2097ae":"jRzxg","a685d680f598422b":"c559Y","31000596897051de":"eMPIR","95752395992dddd6":"aqsBX","11e1a1f996ad7e2f":"5IhGw","532099c0c308747":"64z3Z","b3dc15c3f22de212":"cfEVk","a7346ac7f8e2cc03":"4Y2qt","2829f0dbb2a2777d":"giEEI","21d5815bd90aa016":"kz9MO","55788031b6a6375f":"92n2k","885a4f5857f7f7ab":"ejDyj","d73aebd27393f307":"eSAOk","29677a704976100b":"i5vLQ","6ad2f3a73ad99f72":"2UCH0","1e7735de066ba088":"uMKYV","565b47e862b7490b":"6iLbi","e894bf06f0f7eff0":"ggJuJ","a4e82a569a826175":"ggYro","345ac8a0644bb523":"311bi","93fc3d9d354e6d29":"lrDLL","7716d785ce14c8ab":"dHUja","6ac9ba8795e143db":"ietKq","922abc82b2b7e96":"3ZtWx","fcace8deb1937e44":"iMgqk","7d86031227543e9a":"fnfHD","b2c861539e25799d":"kKzE3","be43a89cc5fd54dd":"jwYgS","8f3cff687936ea88":"fnyHL","5e6da069fd9f5bfb":"2aHUI","59abab5b8ddc20cf":"882Su","7d50eb0b0567ebe5":"6dOJg","f992c19d0b44969b":"fX88e","506f5c8e3cda1ae9":"2clTZ","6f1425e38daddcd2":"2OufW","95b5496854977a97":"euTmI","2c861e4d984de5f4":"bc5nx","94924a1c3d9e026b":"jLhPb","52c0daa1072b057d":"kqFre","3de92f22a2bcb400":"dOJhs","a0fc874eba68ac64":"333SJ","94337850aab88138":"fvopj","a45fb3ba009b2008":"2SwWr","54caf452294a8469":"8JWUX","885e4f058d714077":"4fCkG","5b4e830d37807187":"42ROn","e4a33b80a5420176":"2fo8e","d8158b49ad8aedfb":"54cCw","6a92cbf28e84c958":"i2D09","7ff49150aacea561":"4uJKO","b382a06638f9aebe":"h9CXL","3c6022a2163b5c7":"d1xSb","d9e697e4afd54faa":"3l0SP","6fed1e9d81c47666":"dOlLM","920998b7669d477e":"ijHmo","834f792d9b829eab":"1F47Q","3eaad3ec6c786425":"3UiV4","3994b10cc0acf36f":"i2QIR","53fdf971d1aecf2d":"ezKa1","e92f7f900995c96b":"cmdAX","7a241e6a4b0008c4":"eEpoU","674da81f6164ba63":"9Kesr","8795b4d2f4424fc6":"kZH8D","c5551f44f03fb58c":"itVCV","bd5d5a5a9e46911b":"4wfFN","3381657559ee58cb":"8TcZT","aead84aa3075fb9e":"fY6fO","df7ea6e72a001022":"9BLds","a0c56fa4bd592df5":"iFJ12","db86e1b83fd2e867":"1q8W8","646dd6aa3e7baec7":"5Fnhr","de8301d1469110c8":"73ZsY","28b823a4382966c2":"lVjhQ","82710c054670a0be":"6F0IV","ffdbbe618b7d7ff7":"1WuBT","a3b674069d6ad29e":"53Fti","62968e1769b1b799":"jFs8w","867b70692f378d44":"b3GVW","28b30b0a3e6f2a33":"giX9P","91f6e08b1cb0a3ca":"cWO9a","b9922aaf7194ffd0":"aqvZv","edf13e035baa2608":"fg2az","81fa6c02edc52e80":"dsVMf","66b639cab4122cb4":"hU8Gm","3aa39433380e1f5f":"30pMd","4c6f5485682c6913":"gibFn","4786bf7064742c34":"5ERz2","bbe5f6b09bbe4704":"2iJ6n","b0936c07c9988a10":"aKg4i","88a631e80de1136f":"cEMCX","1c8672376f85595e":"lgyUm","eec0d72e05df8a33":"3GSXC","7f8143bf2596c95a":"bexko","681de2fe4a7d923f":"hcdrv","ef06d35ce265ff23":"katKz","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","c2eef0de058c740d":"ktZio","52a7a861fda9f30b":"9Fn32","9c18ef670372a950":"lntzS","9cb9b835c8aecf1e":"9oiBz","4e7685da53edcdb2":"1yZFC","7dfad34e076d902a":"6hxnK","e6b69140c90bc1ac":"3vWjy","8d0f2d7300b372dc":"5lvAO","b6486eecfa6dd0c":"1AkEW","9c484782eeeb396f":"5Fmvm","92e2dcdb599e0e86":"51gt3","d52baa4075fb2b3":"j7mVh","6062f456d781d0cb":"gPXyp","5ed07d784ed75992":"cy53r","1a62b5c043c2fad6":"8d9iE","99101774e61f2692":"zkT15","4861c5c899050042":"jdQW4","28a2665c49a6300":"gLqya","11b8569b0e6d4678":"53YdD","921e796bcaa4ce5d":"6TA6M","5b48a9e2d2dc19f7":"7nXkt","c9ef71e630295927":"l8JVV","8f33d966f5fbb7ac":"b113l","eb88667065e3cf00":"490db","36aafb8798b994a2":"9Hf0e","c02b5382e379fe35":"03c6w","a28f62b1ecb9edad":"bvPn8","d8294d38c186241f":"fbvQi","77d67807a0769154":"8gdpg","69a7031e495f7be0":"2XGnd","ca5bd563d3e72b8d":"aALF3","a811b18f1c0bb33a":"cESoG","88e40d88b661dd4b":"155B0","9bf4dae99eaef48c":"7T72P","4be596869190e41b":"1R46k","e73aafba07ea7b67":"lJEl9","94ff87e1c79456f":"bktKl","98420d767ed21275":"4XWSL","c7de6fb8246c75a9":"9aQVx","df791106f119ec62":"2szZH","9736b820bbd18588":"lyMtb","ad45e95ea0806af9":"45JRd"}],"lKxjm":[function(require,module,exports) {
+},{"7b5c8aec72525cee":"lKxjm","607ccc0d6f9c9abb":"9T3Vb","1b32caa41e0f6577":"4HQoo","2d7d84a335812f1":"5YiBG","5799805c371b5d87":"k5ySQ","573225369e2773d":"fDoMT","1ec50ab038cc735e":"9KR83","4b9f4f0fc50194e0":"jWDdN","84a0aadb15bc67aa":"aVA6M","209300ede3fc1eed":"44CBM","4a8265315ad7548":"4cYMm","468d63721d0dc4c4":"aiWbD","6a4a87679b6896dd":"ae1BM","65e64b9263edad05":"bSCL0","52e6f81be1a471c5":"f1dRX","fb9f4659004ff5d5":"b90gY","d30d35e71a85209":"813Mq","68b7e1bebf2097ae":"jRzxg","a685d680f598422b":"c559Y","31000596897051de":"eMPIR","95752395992dddd6":"aqsBX","11e1a1f996ad7e2f":"5IhGw","532099c0c308747":"64z3Z","b3dc15c3f22de212":"cfEVk","a7346ac7f8e2cc03":"4Y2qt","2829f0dbb2a2777d":"giEEI","21d5815bd90aa016":"kz9MO","55788031b6a6375f":"92n2k","885a4f5857f7f7ab":"ejDyj","d73aebd27393f307":"eSAOk","29677a704976100b":"i5vLQ","6ad2f3a73ad99f72":"2UCH0","1e7735de066ba088":"uMKYV","565b47e862b7490b":"6iLbi","e894bf06f0f7eff0":"ggJuJ","a4e82a569a826175":"ggYro","345ac8a0644bb523":"311bi","93fc3d9d354e6d29":"lrDLL","7716d785ce14c8ab":"dHUja","6ac9ba8795e143db":"ietKq","922abc82b2b7e96":"3ZtWx","fcace8deb1937e44":"iMgqk","7d86031227543e9a":"fnfHD","b2c861539e25799d":"kKzE3","be43a89cc5fd54dd":"jwYgS","8f3cff687936ea88":"fnyHL","5e6da069fd9f5bfb":"2aHUI","59abab5b8ddc20cf":"882Su","7d50eb0b0567ebe5":"6dOJg","f992c19d0b44969b":"fX88e","506f5c8e3cda1ae9":"2clTZ","6f1425e38daddcd2":"2OufW","95b5496854977a97":"euTmI","2c861e4d984de5f4":"bc5nx","94924a1c3d9e026b":"jLhPb","52c0daa1072b057d":"kqFre","3de92f22a2bcb400":"dOJhs","a0fc874eba68ac64":"333SJ","94337850aab88138":"fvopj","a45fb3ba009b2008":"2SwWr","54caf452294a8469":"8JWUX","885e4f058d714077":"4fCkG","5b4e830d37807187":"42ROn","e4a33b80a5420176":"2fo8e","d8158b49ad8aedfb":"54cCw","6a92cbf28e84c958":"i2D09","7ff49150aacea561":"4uJKO","b382a06638f9aebe":"h9CXL","3c6022a2163b5c7":"d1xSb","d9e697e4afd54faa":"3l0SP","6fed1e9d81c47666":"dOlLM","920998b7669d477e":"ijHmo","834f792d9b829eab":"1F47Q","3eaad3ec6c786425":"3UiV4","3994b10cc0acf36f":"i2QIR","53fdf971d1aecf2d":"ezKa1","e92f7f900995c96b":"cmdAX","7a241e6a4b0008c4":"eEpoU","674da81f6164ba63":"9Kesr","8795b4d2f4424fc6":"kZH8D","c5551f44f03fb58c":"itVCV","bd5d5a5a9e46911b":"4wfFN","3381657559ee58cb":"8TcZT","aead84aa3075fb9e":"fY6fO","df7ea6e72a001022":"9BLds","a0c56fa4bd592df5":"iFJ12","db86e1b83fd2e867":"1q8W8","646dd6aa3e7baec7":"5Fnhr","de8301d1469110c8":"73ZsY","28b823a4382966c2":"lVjhQ","82710c054670a0be":"6F0IV","ffdbbe618b7d7ff7":"1WuBT","a3b674069d6ad29e":"53Fti","62968e1769b1b799":"jFs8w","867b70692f378d44":"b3GVW","28b30b0a3e6f2a33":"giX9P","91f6e08b1cb0a3ca":"cWO9a","b9922aaf7194ffd0":"aqvZv","edf13e035baa2608":"fg2az","81fa6c02edc52e80":"dsVMf","66b639cab4122cb4":"hU8Gm","3aa39433380e1f5f":"30pMd","4c6f5485682c6913":"gibFn","4786bf7064742c34":"5ERz2","bbe5f6b09bbe4704":"2iJ6n","b0936c07c9988a10":"aKg4i","88a631e80de1136f":"cEMCX","1c8672376f85595e":"lgyUm","eec0d72e05df8a33":"3GSXC","7f8143bf2596c95a":"bexko","681de2fe4a7d923f":"hcdrv","ef06d35ce265ff23":"katKz","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"lKxjm":[function(require,module,exports) {
 module.exports = require("2b0f06968feb34b6").getBundleURL("7JE76") + "primitives-1-100dpi-001.4b79e458.png" + "?" + Date.now();
 
 },{"2b0f06968feb34b6":"lgJ39"}],"lgJ39":[function(require,module,exports) {
@@ -1493,133 +1469,7 @@ module.exports = require("df16f29c68dcad81").getBundleURL("7JE76") + "primitives
 },{"df16f29c68dcad81":"lgJ39"}],"katKz":[function(require,module,exports) {
 module.exports = require("3f134c90360ac54f").getBundleURL("7JE76") + "primitives-1-100dpi-112.98d3b266.png" + "?" + Date.now();
 
-},{"3f134c90360ac54f":"lgJ39"}],"ktZio":[function(require,module,exports) {
-module.exports = require("e267610c9b1f5ea4").getBundleURL("7JE76") + "primitive_1.0d76476d.png" + "?" + Date.now();
-
-},{"e267610c9b1f5ea4":"lgJ39"}],"9Fn32":[function(require,module,exports) {
-module.exports = require("c898a46da2d73edb").getBundleURL("7JE76") + "primitive_2.4f2cd23b.png" + "?" + Date.now();
-
-},{"c898a46da2d73edb":"lgJ39"}],"lntzS":[function(require,module,exports) {
-module.exports = require("65770dcaf165d216").getBundleURL("7JE76") + "primitive_3.d5d63ab3.png" + "?" + Date.now();
-
-},{"65770dcaf165d216":"lgJ39"}],"9oiBz":[function(require,module,exports) {
-module.exports = require("9a7a7a266fb6ef67").getBundleURL("7JE76") + "primitive_4.a515d11f.png" + "?" + Date.now();
-
-},{"9a7a7a266fb6ef67":"lgJ39"}],"1yZFC":[function(require,module,exports) {
-module.exports = require("d22245b640558c5f").getBundleURL("7JE76") + "primitive_5.99ec732d.png" + "?" + Date.now();
-
-},{"d22245b640558c5f":"lgJ39"}],"6hxnK":[function(require,module,exports) {
-module.exports = require("53dc179bf4aaf6ce").getBundleURL("7JE76") + "primitive_6.d34d7944.png" + "?" + Date.now();
-
-},{"53dc179bf4aaf6ce":"lgJ39"}],"3vWjy":[function(require,module,exports) {
-module.exports = require("7af64e5fa92eba3d").getBundleURL("7JE76") + "primitive_7.a1168d2e.png" + "?" + Date.now();
-
-},{"7af64e5fa92eba3d":"lgJ39"}],"5lvAO":[function(require,module,exports) {
-module.exports = require("a532b73ffbbabd59").getBundleURL("7JE76") + "primitive_8.50d17dc5.png" + "?" + Date.now();
-
-},{"a532b73ffbbabd59":"lgJ39"}],"1AkEW":[function(require,module,exports) {
-module.exports = require("366e016f59b89097").getBundleURL("7JE76") + "primitive_9.13087161.png" + "?" + Date.now();
-
-},{"366e016f59b89097":"lgJ39"}],"5Fmvm":[function(require,module,exports) {
-module.exports = require("9aee9442130672b5").getBundleURL("7JE76") + "primitive_10.6714895f.png" + "?" + Date.now();
-
-},{"9aee9442130672b5":"lgJ39"}],"51gt3":[function(require,module,exports) {
-module.exports = require("b9daf99e43b3c09e").getBundleURL("7JE76") + "primitive_11.1cf009c2.png" + "?" + Date.now();
-
-},{"b9daf99e43b3c09e":"lgJ39"}],"j7mVh":[function(require,module,exports) {
-module.exports = require("3ed4e84c171d8752").getBundleURL("7JE76") + "primitive_12.f416b66f.png" + "?" + Date.now();
-
-},{"3ed4e84c171d8752":"lgJ39"}],"gPXyp":[function(require,module,exports) {
-module.exports = require("16880abfa61c8d28").getBundleURL("7JE76") + "primitive_13.36ab5b39.png" + "?" + Date.now();
-
-},{"16880abfa61c8d28":"lgJ39"}],"cy53r":[function(require,module,exports) {
-module.exports = require("46203c241584ad42").getBundleURL("7JE76") + "primitive_14.5629ec0d.png" + "?" + Date.now();
-
-},{"46203c241584ad42":"lgJ39"}],"8d9iE":[function(require,module,exports) {
-module.exports = require("ba06dfc818314b52").getBundleURL("7JE76") + "primitive_15.a346c158.png" + "?" + Date.now();
-
-},{"ba06dfc818314b52":"lgJ39"}],"zkT15":[function(require,module,exports) {
-module.exports = require("f7315754b1861a0b").getBundleURL("7JE76") + "primitive_16.45bbbbe2.png" + "?" + Date.now();
-
-},{"f7315754b1861a0b":"lgJ39"}],"jdQW4":[function(require,module,exports) {
-module.exports = require("4f48aa4b08e5985").getBundleURL("7JE76") + "primitive_17.029f35f3.png" + "?" + Date.now();
-
-},{"4f48aa4b08e5985":"lgJ39"}],"gLqya":[function(require,module,exports) {
-module.exports = require("d40b20b01207e54c").getBundleURL("7JE76") + "primitive_18.423d2641.png" + "?" + Date.now();
-
-},{"d40b20b01207e54c":"lgJ39"}],"53YdD":[function(require,module,exports) {
-module.exports = require("2c69c6ee89ae0c0e").getBundleURL("7JE76") + "primitive_19.92654cf8.png" + "?" + Date.now();
-
-},{"2c69c6ee89ae0c0e":"lgJ39"}],"6TA6M":[function(require,module,exports) {
-module.exports = require("1bddab87c1c51e36").getBundleURL("7JE76") + "primitive_20.f41994a2.png" + "?" + Date.now();
-
-},{"1bddab87c1c51e36":"lgJ39"}],"7nXkt":[function(require,module,exports) {
-module.exports = require("4114e651df7ea87e").getBundleURL("7JE76") + "primitive_21.22437a3c.png" + "?" + Date.now();
-
-},{"4114e651df7ea87e":"lgJ39"}],"l8JVV":[function(require,module,exports) {
-module.exports = require("93cf55e25ecf89a7").getBundleURL("7JE76") + "primitive_22.2c78e259.png" + "?" + Date.now();
-
-},{"93cf55e25ecf89a7":"lgJ39"}],"b113l":[function(require,module,exports) {
-module.exports = require("1998e8f81a24faea").getBundleURL("7JE76") + "primitive_23.268877f7.png" + "?" + Date.now();
-
-},{"1998e8f81a24faea":"lgJ39"}],"490db":[function(require,module,exports) {
-module.exports = require("1f468ca1e4186505").getBundleURL("7JE76") + "primitive_24.714eecd2.png" + "?" + Date.now();
-
-},{"1f468ca1e4186505":"lgJ39"}],"9Hf0e":[function(require,module,exports) {
-module.exports = require("84ab088afab5a2c9").getBundleURL("7JE76") + "primitive_25.df274f1f.png" + "?" + Date.now();
-
-},{"84ab088afab5a2c9":"lgJ39"}],"03c6w":[function(require,module,exports) {
-module.exports = require("876ecae6a69f4012").getBundleURL("7JE76") + "primitive_26.5e56619a.png" + "?" + Date.now();
-
-},{"876ecae6a69f4012":"lgJ39"}],"bvPn8":[function(require,module,exports) {
-module.exports = require("d51fcf1de5167d8e").getBundleURL("7JE76") + "primitive_27.14e1cb49.png" + "?" + Date.now();
-
-},{"d51fcf1de5167d8e":"lgJ39"}],"fbvQi":[function(require,module,exports) {
-module.exports = require("39e2440b188c61a2").getBundleURL("7JE76") + "primitive_28.9a895720.png" + "?" + Date.now();
-
-},{"39e2440b188c61a2":"lgJ39"}],"8gdpg":[function(require,module,exports) {
-module.exports = require("af493d9e1023ea4f").getBundleURL("7JE76") + "primitive_29.9ad269ac.png" + "?" + Date.now();
-
-},{"af493d9e1023ea4f":"lgJ39"}],"2XGnd":[function(require,module,exports) {
-module.exports = require("e9aad5e57a508dd3").getBundleURL("7JE76") + "primitive_30.514f3932.png" + "?" + Date.now();
-
-},{"e9aad5e57a508dd3":"lgJ39"}],"aALF3":[function(require,module,exports) {
-module.exports = require("97a0876e65d414a").getBundleURL("7JE76") + "primitive_31.033ce8af.png" + "?" + Date.now();
-
-},{"97a0876e65d414a":"lgJ39"}],"cESoG":[function(require,module,exports) {
-module.exports = require("f601cadbb7837264").getBundleURL("7JE76") + "primitive_32.7ca91c26.png" + "?" + Date.now();
-
-},{"f601cadbb7837264":"lgJ39"}],"155B0":[function(require,module,exports) {
-module.exports = require("9c69fefee004ad83").getBundleURL("7JE76") + "primitive_33.915eaeaf.png" + "?" + Date.now();
-
-},{"9c69fefee004ad83":"lgJ39"}],"7T72P":[function(require,module,exports) {
-module.exports = require("802196a98ff7caf5").getBundleURL("7JE76") + "primitive_34.ea5aec13.png" + "?" + Date.now();
-
-},{"802196a98ff7caf5":"lgJ39"}],"1R46k":[function(require,module,exports) {
-module.exports = require("56e0fcc97c244606").getBundleURL("7JE76") + "primitive_35.2d474a24.png" + "?" + Date.now();
-
-},{"56e0fcc97c244606":"lgJ39"}],"lJEl9":[function(require,module,exports) {
-module.exports = require("67a4bd9d9815c194").getBundleURL("7JE76") + "primitive_36.900d50af.png" + "?" + Date.now();
-
-},{"67a4bd9d9815c194":"lgJ39"}],"bktKl":[function(require,module,exports) {
-module.exports = require("335637ea35c999b").getBundleURL("7JE76") + "primitive_37.0e409ad1.png" + "?" + Date.now();
-
-},{"335637ea35c999b":"lgJ39"}],"4XWSL":[function(require,module,exports) {
-module.exports = require("a4632997302ad01c").getBundleURL("7JE76") + "primitive_39.e4807f02.png" + "?" + Date.now();
-
-},{"a4632997302ad01c":"lgJ39"}],"9aQVx":[function(require,module,exports) {
-module.exports = require("8e112188adacdc6d").getBundleURL("7JE76") + "primitive_40.b3f93179.png" + "?" + Date.now();
-
-},{"8e112188adacdc6d":"lgJ39"}],"2szZH":[function(require,module,exports) {
-module.exports = require("807787e665cccde5").getBundleURL("7JE76") + "primitive_41.7ae3ebea.png" + "?" + Date.now();
-
-},{"807787e665cccde5":"lgJ39"}],"lyMtb":[function(require,module,exports) {
-module.exports = require("56b13dff47e66366").getBundleURL("7JE76") + "primitive_42.a7f02f01.png" + "?" + Date.now();
-
-},{"56b13dff47e66366":"lgJ39"}],"45JRd":[function(require,module,exports) {
-module.exports = require("f088a40761b9750d").getBundleURL("7JE76") + "primitive_43.1d5b1894.png" + "?" + Date.now();
-
-},{"f088a40761b9750d":"lgJ39"}],"2DgWL":[function(require,module,exports) {
+},{"3f134c90360ac54f":"lgJ39"}],"2DgWL":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "SelectionState", ()=>SelectionState);
@@ -1639,17 +1489,18 @@ class SelectionState {
     }
 }
 class MandalaState {
-    constructor({ canvasWidth = 800, canvasHeight = 800 } = {}){
+    constructor(order = 8, { canvasWidth = 800, canvasHeight = 800 } = {}){
         this.primitiveGroup = new Map();
         this.canvasWidth = canvasWidth;
         this.canvasHeight = canvasHeight;
         this.mandalaCanvas = document.querySelector("canvas");
         this.mandalaCanvas.width = canvasWidth;
         this.mandalaCanvas.height = canvasHeight;
+        this.symmetryOrder = order;
         this.globalInvert = false;
         this.IDsVisible = false;
     }
-    addPrimitive(symbol, primitive, { distance = 0.9, angle = 0, rotation = 0, scale = 0.1, order = 1, multiplicity = 1, flip = false, invert = false } = {}) {
+    addPrimitive(symbol, primitive, { distance = 0.9, angle = 0, rotation = 0, scale = 0.25, multiplicity = 1, flip = false, invert = false } = {}) {
         const offCanvas = document.createElement("canvas");
         offCanvas.width = this.canvasWidth;
         offCanvas.height = this.canvasHeight;
@@ -1660,7 +1511,7 @@ class MandalaState {
                 angle,
                 rotation,
                 scale,
-                order,
+                order: this.symmetryOrder,
                 multiplicity,
                 flip,
                 invert,
@@ -1676,14 +1527,14 @@ class MandalaState {
     getPrimitiveState(symbol) {
         return this.primitiveGroup.get(symbol);
     }
-    updatePrimitiveState(symbol, { distance, angle, rotation, scale, order, multiplicity, flip, invert } = {}) {
+    updatePrimitiveState(symbol, { distance, angle, rotation, scale, multiplicity, flip, invert } = {}) {
         const oldProps = this.primitiveGroup.get(symbol).props;
         const newProps = {};
         newProps.distance = distance ?? oldProps.distance;
         newProps.angle = angle ?? oldProps.angle;
         newProps.rotation = rotation ?? oldProps.rotation;
         newProps.scale = scale ?? oldProps.scale;
-        newProps.order = order ?? oldProps.order;
+        newProps.order = oldProps.order;
         newProps.multiplicity = multiplicity ?? oldProps.multiplicity;
         newProps.flip = flip ?? oldProps.flip;
         newProps.invert = invert ?? oldProps.invert;
@@ -1710,6 +1561,26 @@ class MandalaState {
         this.primitiveGroup.forEach(({ offCanvas })=>{
             context.drawImage(offCanvas, 0, 0);
         });
+    }
+    getPrimitiveStateAsJSON() {
+        const usedPrimitives = Array.from(this.primitiveGroup.entries());
+        const primitiveList = usedPrimitives.map(([key, { primitive, props }])=>{
+            const obj = {
+                id: primitive.id,
+                polarRadius: props.distance,
+                polarAngle: props.angle,
+                selfRotation: props.rotation,
+                size: props.scale,
+                multiplicity: props.multiplicity,
+                flip: props.flip,
+                invert: (0, _helpers.logicalXOR)(props.invert, this.globalInvert)
+            };
+            return obj;
+        });
+        return JSON.stringify({
+            order: this.symmetryOrder,
+            primitiveList
+        }, null, 2);
     }
 }
 function drawPrimitive(primitives, symbol, globalInvert, showIDs) {
@@ -1798,6 +1669,7 @@ parcelHelpers.export(exports, "setupGridOrderControl", ()=>setupGridOrderControl
 parcelHelpers.export(exports, "clearUsedPrimitives", ()=>clearUsedPrimitives);
 parcelHelpers.export(exports, "setupInvertControl", ()=>setupInvertControl);
 parcelHelpers.export(exports, "setupIDCheckbox", ()=>setupIDCheckbox);
+parcelHelpers.export(exports, "setupSaveSerialButton", ()=>setupSaveSerialButton);
 var _primitivesJs = require("./primitives.js");
 var _primitivesJsDefault = parcelHelpers.interopDefault(_primitivesJs);
 /* Misc Controls */ function setupGridToggle(handler) {
@@ -1810,6 +1682,12 @@ var _primitivesJsDefault = parcelHelpers.interopDefault(_primitivesJs);
 function setupSaveButton(handler) {
     const saveButton = document.querySelector("#save-button");
     saveButton.addEventListener("click", (ev)=>{
+        handler();
+    });
+}
+function setupSaveSerialButton(handler) {
+    const saveSerialButton = document.querySelector("#save-button-serial");
+    saveSerialButton.addEventListener("click", (ev)=>{
         handler();
     });
 }
