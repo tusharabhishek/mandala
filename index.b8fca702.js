@@ -836,8 +836,8 @@ function createMandalaStateFromJSON(jsonObj) {
     const state = new (0, _stateJs.MandalaState)(jsonObj.order);
     if (jsonObj.primitiveList) for (const { id, polarRadius, polarAngle, selfRotation, size, multiplicity, flip, invert } of jsonObj.primitiveList)state.addPrimitive(getID(), (0, _primitivesJsDefault.default)[id], {
         distance: polarRadius,
-        angle: bringWithinRange(polarAngle),
-        rotation: bringWithinRange(selfRotation),
+        angle: bringWithinRange(polarAngle, -180, 180),
+        rotation: bringWithinRange(selfRotation, 0, 360),
         scale: size,
         multiplicity,
         flip,
@@ -906,8 +906,13 @@ function validateJSON(loadedJSON) {
         return true;
     }
 }
-function bringWithinRange(deg) {
-    return deg - Math.floor(deg / 360) * 360 - 180;
+function bringWithinRange(val, min, max) {
+    const range = max - min;
+    const shiftedVal = val - min;
+    const inRangeVal = shiftedVal - Math.floor(shiftedVal / range) * range;
+    const finalInRangeVal = inRangeVal + min;
+    console.log(val, min, max, range, shiftedVal, inRangeVal, finalInRangeVal);
+    return finalInRangeVal;
 }
 
 },{"./grid.js":"7Jpqy","./primitives.js":"9GoLL","./state.js":"2DgWL","./ui.js":"aaZ0V","./helpers.js":"luDvE","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"7Jpqy":[function(require,module,exports) {
