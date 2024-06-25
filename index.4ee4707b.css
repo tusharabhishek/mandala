@@ -26,6 +26,10 @@ body {
   display: grid;
 }
 
+#misc-controls button:last-of-type {
+  grid-column: 2 / 3;
+}
+
 #prim-option-box {
   grid-template-columns: repeat(auto-fit, 3em);
   grid-auto-rows: 3em;

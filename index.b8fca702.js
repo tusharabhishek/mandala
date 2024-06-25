@@ -645,7 +645,6 @@ const selectionState = new (0, _stateJs.SelectionState)();
 let mandalaState = new (0, _stateJs.MandalaState)();
 const getID = (0, _helpersJs.createSerialIDGenerator)();
 let grid = new (0, _gridJsDefault.default)();
-grid.draw();
 /* Image */ /* Clear the canvas */ function clear(canvas) {
     const context = canvas.getContext("2d");
     context.fillStyle = invert ? "black" : "white";
@@ -657,7 +656,7 @@ function draw() {
     grid.drawImageTo(mainCanvas);
     mandalaState.drawImageTo(mainCanvas, invert);
 }
-/* Setup UI when the page has loaded */ window.onload = function() {
+/* Setup UI when the page has loaded */ window.addEventListener("load", function() {
     window.requestAnimationFrame(draw);
     _uiJs.setupGridOrderControl((gridOrder)=>{
         const answer = confirm("This will erase the existing mandala on the canvas. Do you want to continue?");
@@ -668,6 +667,8 @@ function draw() {
             mandalaState = new (0, _stateJs.MandalaState)(gridOrder);
             _uiJs.clearUsedPrimitives();
             _uiJs.showControls(false);
+            mandalaState.showIDs(showIDs);
+            changeSelection(null);
             requestAnimationFrame(draw);
         }
     });
@@ -708,6 +709,58 @@ function draw() {
         downloadLink.click();
         document.body.removeChild(downloadLink);
         URL.revokeObjectURL(downloadURL);
+    });
+    _uiJs.setupLoadSerialButton(()=>{
+        const answer = confirm("This will erase the existing mandala on the canvas. Do you want to continue?");
+        if (answer) {
+            const fileInput = document.querySelector("#hidden-file-input");
+            fileInput.addEventListener("input", (ev)=>{
+                const file = ev.target.files[0];
+                if (file.type === "application/json") {
+                    const fileReader = new FileReader();
+                    fileReader.addEventListener("load", (ev2)=>{
+                        try {
+                            const jsonObj = JSON.parse(ev2.target.result);
+                            if (!validateJSON(jsonObj)) alert("The object in JSON file does not seem to have proper structure.");
+                            else {
+                                const state = createMandalaStateFromJSON(jsonObj);
+                                if (state === null || jsonObj.order < 3) alert("The JSON file does state a valid symmetry order");
+                                else {
+                                    const prevVisible = grid.visible;
+                                    grid = new (0, _gridJsDefault.default)(jsonObj.order, prevVisible);
+                                    order = jsonObj.order;
+                                    mandalaState = state;
+                                    _uiJs.clearUsedPrimitives();
+                                    mandalaState.showIDs(showIDs);
+                                    mandalaState.invertColor(invert);
+                                    mandalaState.primitiveGroup.forEach((val, key)=>{
+                                        function selectHandler() {
+                                            changeSelection(key);
+                                        }
+                                        function deleteHandler() {
+                                            mandalaState.removePrimitive(key);
+                                            changeSelection(null);
+                                        }
+                                        _uiJs.addUsedPrimitive(val.primitive, key, selectHandler, deleteHandler);
+                                    });
+                                    _uiJs.showControls(false);
+                                    changeSelection(null);
+                                    requestAnimationFrame(draw);
+                                }
+                            }
+                        } catch (error) {
+                            console.error(error);
+                            alert("Error occured on parsing the file. Check the console for more details.");
+                        }
+                    });
+                    fileReader.addEventListener("error", ()=>{
+                        alert("Error occured on reading the file.");
+                    });
+                    fileReader.readAsText(file);
+                } else alert(`The file ${file.name} does not seem to be a valid JSON file.`);
+            });
+            fileInput.click();
+        }
     });
     _uiJs.setupInvertControl((status)=>{
         invert = status;
@@ -764,7 +817,7 @@ function draw() {
         _uiJs.updateInvertToggle(flag);
         requestAnimationFrame(draw);
     });
-};
+});
 /* Helpers */ function changeSelection(symbol) {
     selectionState.changeState(symbol);
     _uiJs.showControls(symbol !== null);
@@ -777,6 +830,84 @@ function draw() {
         _uiJs.updateInvertToggle(props.invert);
     }
     requestAnimationFrame(draw);
+}
+function createMandalaStateFromJSON(jsonObj) {
+    if (jsonObj.order === undefined) return null;
+    const state = new (0, _stateJs.MandalaState)(jsonObj.order);
+    if (jsonObj.primitiveList) for (const { id, polarRadius, polarAngle, selfRotation, size, multiplicity, flip, invert } of jsonObj.primitiveList)state.addPrimitive(getID(), (0, _primitivesJsDefault.default)[id], {
+        distance: polarRadius,
+        angle: bringWithinRange(polarAngle),
+        rotation: bringWithinRange(selfRotation),
+        scale: size,
+        multiplicity,
+        flip,
+        invert
+    });
+    return state;
+}
+function validateJSON(loadedJSON) {
+    if (loadedJSON.order === undefined || loadedJSON.primitiveList === undefined) return false;
+    const props = [
+        "id",
+        "polarRadius",
+        "polarAngle",
+        "selfRotation",
+        "size",
+        "multiplicity",
+        "flip",
+        "invert"
+    ];
+    const floats = [
+        {
+            name: "polarRadius",
+            min: 0,
+            max: 1
+        },
+        {
+            name: "size",
+            min: 0,
+            max: 1
+        }
+    ];
+    const numbers = [
+        {
+            name: "polarAngle"
+        },
+        {
+            name: "selfRotation"
+        }
+    ];
+    const booleans = [
+        {
+            name: "flip"
+        },
+        {
+            name: "invert"
+        }
+    ];
+    for (const primitive of loadedJSON.primitiveList){
+        for (const prop of props)if (!prop in primitive) return false;
+        for (const { name, min, max } of floats){
+            const value = primitive[name];
+            if (!Number.isFinite(value) || value < min || value > max) return false;
+        }
+        for (const { name } of numbers){
+            const value = primitive[name];
+            if (!Number.isFinite(value)) return false;
+        }
+        for (const { name } of booleans){
+            const value = primitive[name];
+            if (value !== true && value !== false) return false;
+        }
+        const multiplicity = primitive["multiplicity"];
+        if (!Number.isInteger(multiplicity) || multiplicity < 0 || multiplicity > 1024) return false;
+        const id = Number.parseInt(primitive["id"]);
+        if (!Number.isInteger(id) || id < 0 || id > 112) return false;
+        return true;
+    }
+}
+function bringWithinRange(deg) {
+    return deg - Math.floor(deg / 360) * 360 - 180;
 }
 
 },{"./grid.js":"7Jpqy","./primitives.js":"9GoLL","./state.js":"2DgWL","./ui.js":"aaZ0V","./helpers.js":"luDvE","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"7Jpqy":[function(require,module,exports) {
@@ -1658,6 +1789,7 @@ parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "setupGridToggle", ()=>setupGridToggle);
 parcelHelpers.export(exports, "setupSaveButton", ()=>setupSaveButton);
 parcelHelpers.export(exports, "addPrimitiveButton", ()=>addPrimitiveButton);
+parcelHelpers.export(exports, "addUsedPrimitive", ()=>addUsedPrimitive);
 parcelHelpers.export(exports, "setupControlsFor", ()=>setupControlsFor);
 parcelHelpers.export(exports, "setupFlipToggle", ()=>setupFlipToggle);
 parcelHelpers.export(exports, "updateControlsFor", ()=>updateControlsFor);
@@ -1670,6 +1802,7 @@ parcelHelpers.export(exports, "clearUsedPrimitives", ()=>clearUsedPrimitives);
 parcelHelpers.export(exports, "setupInvertControl", ()=>setupInvertControl);
 parcelHelpers.export(exports, "setupIDCheckbox", ()=>setupIDCheckbox);
 parcelHelpers.export(exports, "setupSaveSerialButton", ()=>setupSaveSerialButton);
+parcelHelpers.export(exports, "setupLoadSerialButton", ()=>setupLoadSerialButton);
 var _primitivesJs = require("./primitives.js");
 var _primitivesJsDefault = parcelHelpers.interopDefault(_primitivesJs);
 /* Misc Controls */ function setupGridToggle(handler) {
@@ -1688,6 +1821,12 @@ function setupSaveButton(handler) {
 function setupSaveSerialButton(handler) {
     const saveSerialButton = document.querySelector("#save-button-serial");
     saveSerialButton.addEventListener("click", (ev)=>{
+        handler();
+    });
+}
+function setupLoadSerialButton(handler) {
+    const loadSerialButton = document.querySelector("#load-button-serial");
+    loadSerialButton.addEventListener("click", (ev)=>{
         handler();
     });
 }
