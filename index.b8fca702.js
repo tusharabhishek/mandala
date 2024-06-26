@@ -724,11 +724,13 @@ function draw() {
                             if (!validateJSON(jsonObj)) alert("The object in JSON file does not seem to have proper structure.");
                             else {
                                 const state = createMandalaStateFromJSON(jsonObj);
-                                if (state === null || jsonObj.order < 3) alert("The JSON file does state a valid symmetry order");
+                                if (state === null || jsonObj.order < 3) alert("The JSON file does not state a valid symmetry order");
                                 else {
                                     const prevVisible = grid.visible;
                                     grid = new (0, _gridJsDefault.default)(jsonObj.order, prevVisible);
                                     order = jsonObj.order;
+                                    invert = jsonObj.invert;
+                                    _uiJs.updateInvertControl(invert);
                                     mandalaState = state;
                                     _uiJs.clearUsedPrimitives();
                                     mandalaState.showIDs(showIDs);
@@ -846,7 +848,7 @@ function createMandalaStateFromJSON(jsonObj) {
     return state;
 }
 function validateJSON(loadedJSON) {
-    if (loadedJSON.order === undefined || loadedJSON.primitiveList === undefined) return false;
+    if (loadedJSON.order === undefined || loadedJSON.primitiveList === undefined || loadedJSON.invert === undefined) return false;
     const props = [
         "id",
         "polarRadius",
@@ -903,8 +905,8 @@ function validateJSON(loadedJSON) {
         if (!Number.isInteger(multiplicity) || multiplicity < 0 || multiplicity > 1024) return false;
         const id = Number.parseInt(primitive["id"]);
         if (!Number.isInteger(id) || id < 0 || id > 112) return false;
-        return true;
     }
+    return true;
 }
 function bringWithinRange(val, min, max) {
     const range = max - min;
@@ -1709,12 +1711,13 @@ class MandalaState {
                 size: props.scale,
                 multiplicity: props.multiplicity,
                 flip: props.flip,
-                invert: (0, _helpers.logicalXOR)(props.invert, this.globalInvert)
+                invert: props.invert
             };
             return obj;
         });
         return JSON.stringify({
             order: this.symmetryOrder,
+            invert: this.globalInvert,
             primitiveList
         }, null, 2);
     }
@@ -1808,6 +1811,7 @@ parcelHelpers.export(exports, "setupInvertControl", ()=>setupInvertControl);
 parcelHelpers.export(exports, "setupIDCheckbox", ()=>setupIDCheckbox);
 parcelHelpers.export(exports, "setupSaveSerialButton", ()=>setupSaveSerialButton);
 parcelHelpers.export(exports, "setupLoadSerialButton", ()=>setupLoadSerialButton);
+parcelHelpers.export(exports, "updateInvertControl", ()=>updateInvertControl);
 var _primitivesJs = require("./primitives.js");
 var _primitivesJsDefault = parcelHelpers.interopDefault(_primitivesJs);
 /* Misc Controls */ function setupGridToggle(handler) {
@@ -1849,6 +1853,10 @@ function setupInvertControl(handler) {
     invertToggle.addEventListener("change", (ev)=>{
         handler(ev.target.checked);
     });
+}
+function updateInvertControl(flag) {
+    const invertToggle = document.querySelector("#invert-toggle");
+    invertToggle.checked = flag;
 }
 function setupIDCheckbox(handler) {
     const showIDToggle = document.querySelector("#checkbox-show-id");
