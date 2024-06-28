@@ -667,6 +667,7 @@ function draw() {
             mandalaState = new (0, _stateJs.MandalaState)(gridOrder);
             _uiJs.clearUsedPrimitives();
             _uiJs.showControls(false);
+            getID = (0, _helpersJs.createSerialIDGenerator)(1);
             mandalaState.showIDs(showIDs);
             changeSelection(null);
             requestAnimationFrame(draw);
