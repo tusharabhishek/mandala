@@ -643,7 +643,7 @@ const mainCanvas = document.querySelector("#main-canvas");
 ];
 const selectionState = new (0, _stateJs.SelectionState)();
 let mandalaState = new (0, _stateJs.MandalaState)();
-const getID = (0, _helpersJs.createSerialIDGenerator)();
+let getID = (0, _helpersJs.createSerialIDGenerator)();
 let grid = new (0, _gridJsDefault.default)();
 /* Image */ /* Clear the canvas */ function clear(canvas) {
     const context = canvas.getContext("2d");
@@ -836,6 +836,7 @@ function draw() {
 function createMandalaStateFromJSON(jsonObj) {
     if (jsonObj.order === undefined) return null;
     const state = new (0, _stateJs.MandalaState)(jsonObj.order);
+    getID = (0, _helpersJs.createSerialIDGenerator)(1);
     if (jsonObj.primitiveList) for (const { id, polarRadius, polarAngle, selfRotation, size, multiplicity, flip, invert } of jsonObj.primitiveList)state.addPrimitive(getID(), (0, _primitivesJsDefault.default)[id], {
         distance: polarRadius,
         angle: bringWithinRange(polarAngle, -180, 180),
@@ -913,7 +914,6 @@ function bringWithinRange(val, min, max) {
     const shiftedVal = val - min;
     const inRangeVal = shiftedVal - Math.floor(shiftedVal / range) * range;
     const finalInRangeVal = inRangeVal + min;
-    console.log(val, min, max, range, shiftedVal, inRangeVal, finalInRangeVal);
     return finalInRangeVal;
 }
 
