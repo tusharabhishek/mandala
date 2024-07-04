@@ -644,6 +644,7 @@ const mainCanvas = document.querySelector("#main-canvas");
 const selectionState = new (0, _stateJs.SelectionState)();
 let mandalaState = new (0, _stateJs.MandalaState)();
 let getID = (0, _helpersJs.createSerialIDGenerator)();
+let createPrimitiveID = (0, _helpersJs.createSerialIDGenerator)();
 let grid = new (0, _gridJsDefault.default)();
 /* Image */ /* Clear the canvas */ function clear(canvas) {
     const context = canvas.getContext("2d");
@@ -764,6 +765,37 @@ function draw() {
             });
             fileInput.click();
         }
+    });
+    _uiJs.setupAddCustomPrimitiveButton(()=>{
+        const primitiveInput = document.querySelector("#hidden-primitive-input");
+        primitiveInput.addEventListener("input", (ev)=>{
+            const file = ev.target.files[0];
+            const fileReader = new FileReader();
+            fileReader.addEventListener("load", (ev2)=>{
+                const dataURL = ev2.target.result;
+                const primitiveID = `custom-${createPrimitiveID()}`;
+                (0, _primitivesJs.createPrimitive)(primitiveID, dataURL);
+                function clickHandler() {
+                    const symbol = getID();
+                    mandalaState.addPrimitive(symbol, (0, _primitivesJsDefault.default)[primitiveID]);
+                    changeSelection(symbol);
+                    return symbol;
+                }
+                function selectHandler(symbol) {
+                    changeSelection(symbol);
+                }
+                function deleteHandler(symbol) {
+                    mandalaState.removePrimitive(symbol);
+                    changeSelection(null);
+                }
+                _uiJs.addPrimitiveButton((0, _primitivesJsDefault.default)[primitiveID], clickHandler, selectHandler, deleteHandler);
+            });
+            fileReader.addEventListener("error", ()=>{
+                alert("Error occured on reading the file");
+            });
+            fileReader.readAsDataURL(file);
+        });
+        primitiveInput.click();
     });
     _uiJs.setupInvertControl((status)=>{
         invert = status;
@@ -1042,14 +1074,15 @@ exports.export = function(dest, destName, get) {
 },{}],"9GoLL":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "createPrimitive", ()=>createPrimitive);
 var _imageUrls = require("./imageUrls");
 var _imageUrlsDefault = parcelHelpers.interopDefault(_imageUrls);
 var _helpers = require("./helpers");
 class Primitive {
-    constructor(id){
+    constructor(id, url){
         this.ready = false;
         this.id = id;
-        this.url = (0, _imageUrlsDefault.default)[id];
+        this.url = url;
         this.rawData = new Image();
         this.rawData.src = this.url;
         this.rawData.addEventListener("load", ()=>{
@@ -1114,7 +1147,10 @@ function processImage(image) {
     return canvas.toDataURL();
 }
 const primitives = {};
-for(const id in 0, _imageUrlsDefault.default)primitives[id] = new Primitive(id);
+for(const id in 0, _imageUrlsDefault.default)primitives[id] = new Primitive(id, (0, _imageUrlsDefault.default)[id]);
+function createPrimitive(id, dataURL) {
+    primitives[id] = new Primitive(id, dataURL);
+}
 exports.default = primitives;
 
 },{"./imageUrls":"7WJg4","./helpers":"luDvE","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"7WJg4":[function(require,module,exports) {
@@ -1813,6 +1849,7 @@ parcelHelpers.export(exports, "setupIDCheckbox", ()=>setupIDCheckbox);
 parcelHelpers.export(exports, "setupSaveSerialButton", ()=>setupSaveSerialButton);
 parcelHelpers.export(exports, "setupLoadSerialButton", ()=>setupLoadSerialButton);
 parcelHelpers.export(exports, "updateInvertControl", ()=>updateInvertControl);
+parcelHelpers.export(exports, "setupAddCustomPrimitiveButton", ()=>setupAddCustomPrimitiveButton);
 var _primitivesJs = require("./primitives.js");
 var _primitivesJsDefault = parcelHelpers.interopDefault(_primitivesJs);
 /* Misc Controls */ function setupGridToggle(handler) {
@@ -1880,6 +1917,12 @@ function setupIDCheckbox(handler) {
     });
     primitiveOptionBox.appendChild(primitiveButton);
     return primitiveButton;
+}
+function setupAddCustomPrimitiveButton(handler) {
+    const addCustomPrimitiveButton = document.querySelector("#add-custom-button");
+    addCustomPrimitiveButton.addEventListener("click", ()=>{
+        handler();
+    });
 }
 /* Used Primitives */ function addUsedPrimitive(primitive, symbol, selectHandler, deleteHandler) {
     const usedPrimitivesBox = document.querySelector("#prim-used-box");
