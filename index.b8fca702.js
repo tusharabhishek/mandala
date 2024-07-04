@@ -713,89 +713,78 @@ function draw() {
         URL.revokeObjectURL(downloadURL);
     });
     _uiJs.setupLoadSerialButton(()=>{
-        const answer = confirm("This will erase the existing mandala on the canvas. Do you want to continue?");
-        if (answer) {
-            const fileInput = document.querySelector("#hidden-file-input");
-            fileInput.addEventListener("input", (ev)=>{
-                const file = ev.target.files[0];
-                if (file.type === "application/json") {
-                    const fileReader = new FileReader();
-                    fileReader.addEventListener("load", (ev2)=>{
-                        try {
-                            const jsonObj = JSON.parse(ev2.target.result);
-                            if (!validateJSON(jsonObj)) alert("The object in JSON file does not seem to have proper structure.");
-                            else {
-                                const state = createMandalaStateFromJSON(jsonObj);
-                                if (state === null || jsonObj.order < 3) alert("The JSON file does not state a valid symmetry order");
-                                else {
-                                    const prevVisible = grid.visible;
-                                    grid = new (0, _gridJsDefault.default)(jsonObj.order, prevVisible);
-                                    order = jsonObj.order;
-                                    invert = jsonObj.invert;
-                                    _uiJs.updateInvertControl(invert);
-                                    mandalaState = state;
-                                    _uiJs.clearUsedPrimitives();
-                                    mandalaState.showIDs(showIDs);
-                                    mandalaState.invertColor(invert);
-                                    mandalaState.primitiveGroup.forEach((val, key)=>{
-                                        function selectHandler() {
-                                            changeSelection(key);
-                                        }
-                                        function deleteHandler() {
-                                            mandalaState.removePrimitive(key);
-                                            changeSelection(null);
-                                        }
-                                        _uiJs.addUsedPrimitive(val.primitive, key, selectHandler, deleteHandler);
-                                    });
-                                    _uiJs.showControls(false);
-                                    changeSelection(null);
-                                    requestAnimationFrame(draw);
-                                }
-                            }
-                        } catch (error) {
-                            console.error(error);
-                            alert("Error occured on parsing the file. Check the console for more details.");
-                        }
-                    });
-                    fileReader.addEventListener("error", ()=>{
-                        alert("Error occured on reading the file.");
-                    });
-                    fileReader.readAsText(file);
-                } else alert(`The file ${file.name} does not seem to be a valid JSON file.`);
-            });
-            fileInput.click();
-        }
-    });
-    _uiJs.setupAddCustomPrimitiveButton(()=>{
-        const primitiveInput = document.querySelector("#hidden-primitive-input");
-        primitiveInput.addEventListener("input", (ev)=>{
-            const file = ev.target.files[0];
+        return confirm("This will erase the existing mandala on the canvas. Do you want to continue?");
+    }, (file)=>{
+        if (file.type === "application/json") {
             const fileReader = new FileReader();
             fileReader.addEventListener("load", (ev2)=>{
-                const dataURL = ev2.target.result;
-                const primitiveID = `custom-${createPrimitiveID()}`;
-                (0, _primitivesJs.createPrimitive)(primitiveID, dataURL);
-                function clickHandler() {
-                    const symbol = getID();
-                    mandalaState.addPrimitive(symbol, (0, _primitivesJsDefault.default)[primitiveID]);
-                    changeSelection(symbol);
-                    return symbol;
+                try {
+                    const jsonObj = JSON.parse(ev2.target.result);
+                    if (!validateJSON(jsonObj)) alert("The object in JSON file does not seem to have proper structure.");
+                    else {
+                        const state = createMandalaStateFromJSON(jsonObj);
+                        if (state === null || jsonObj.order < 3) alert("The JSON file does not state a valid symmetry order");
+                        else {
+                            const prevVisible = grid.visible;
+                            grid = new (0, _gridJsDefault.default)(jsonObj.order, prevVisible);
+                            order = jsonObj.order;
+                            invert = jsonObj.invert;
+                            _uiJs.updateInvertControl(invert);
+                            mandalaState = state;
+                            _uiJs.clearUsedPrimitives();
+                            mandalaState.showIDs(showIDs);
+                            mandalaState.invertColor(invert);
+                            mandalaState.primitiveGroup.forEach((val, key)=>{
+                                function selectHandler() {
+                                    changeSelection(key);
+                                }
+                                function deleteHandler() {
+                                    mandalaState.removePrimitive(key);
+                                    changeSelection(null);
+                                }
+                                _uiJs.addUsedPrimitive(val.primitive, key, selectHandler, deleteHandler);
+                            });
+                            _uiJs.showControls(false);
+                            changeSelection(null);
+                            requestAnimationFrame(draw);
+                        }
+                    }
+                } catch (error) {
+                    console.error(error);
+                    alert("Error occured on parsing the file. Check the console for more details.");
                 }
-                function selectHandler(symbol) {
-                    changeSelection(symbol);
-                }
-                function deleteHandler(symbol) {
-                    mandalaState.removePrimitive(symbol);
-                    changeSelection(null);
-                }
-                _uiJs.addPrimitiveButton((0, _primitivesJsDefault.default)[primitiveID], clickHandler, selectHandler, deleteHandler);
             });
             fileReader.addEventListener("error", ()=>{
-                alert("Error occured on reading the file");
+                alert("Error occured on reading the file.");
             });
-            fileReader.readAsDataURL(file);
+            fileReader.readAsText(file);
+        } else alert(`The file ${file.name} does not seem to be a valid JSON file.`);
+    });
+    _uiJs.setupAddCustomPrimitiveButton((file)=>{
+        const fileReader = new FileReader();
+        fileReader.addEventListener("load", (ev2)=>{
+            const dataURL = ev2.target.result;
+            const primitiveID = `custom-${createPrimitiveID()}`;
+            (0, _primitivesJs.createPrimitive)(primitiveID, dataURL);
+            function clickHandler() {
+                const symbol = getID();
+                mandalaState.addPrimitive(symbol, (0, _primitivesJsDefault.default)[primitiveID]);
+                changeSelection(symbol);
+                return symbol;
+            }
+            function selectHandler(symbol) {
+                changeSelection(symbol);
+            }
+            function deleteHandler(symbol) {
+                mandalaState.removePrimitive(symbol);
+                changeSelection(null);
+            }
+            _uiJs.addPrimitiveButton((0, _primitivesJsDefault.default)[primitiveID], clickHandler, selectHandler, deleteHandler);
         });
-        primitiveInput.click();
+        fileReader.addEventListener("error", ()=>{
+            alert("Error occured on reading the file");
+        });
+        fileReader.readAsDataURL(file);
     });
     _uiJs.setupInvertControl((status)=>{
         invert = status;
@@ -937,8 +926,6 @@ function validateJSON(loadedJSON) {
         }
         const multiplicity = primitive["multiplicity"];
         if (!Number.isInteger(multiplicity) || multiplicity < 0 || multiplicity > 1024) return false;
-        const id = Number.parseInt(primitive["id"]);
-        if (!Number.isInteger(id) || id < 0 || id > 112) return false;
     }
     return true;
 }
@@ -1871,10 +1858,15 @@ function setupSaveSerialButton(handler) {
         handler();
     });
 }
-function setupLoadSerialButton(handler) {
+function setupLoadSerialButton(handler, inputHandler) {
     const loadSerialButton = document.querySelector("#load-button-serial");
+    const fileInput = document.querySelector("#hidden-file-input");
+    fileInput.addEventListener("input", (ev)=>{
+        inputHandler(ev.target.files[0]);
+    });
     loadSerialButton.addEventListener("click", (ev)=>{
-        handler();
+        const answer = handler();
+        if (answer) fileInput.click();
     });
 }
 function setupGridOrderControl(handler) {
@@ -1920,8 +1912,12 @@ function setupIDCheckbox(handler) {
 }
 function setupAddCustomPrimitiveButton(handler) {
     const addCustomPrimitiveButton = document.querySelector("#add-custom-button");
-    addCustomPrimitiveButton.addEventListener("click", ()=>{
-        handler();
+    const primitiveInput = document.querySelector("#hidden-primitive-input");
+    primitiveInput.addEventListener("input", (ev)=>{
+        handler(ev.target.files[0]);
+    });
+    addCustomPrimitiveButton.addEventListener("click", (ev)=>{
+        primitiveInput.click();
     });
 }
 /* Used Primitives */ function addUsedPrimitive(primitive, symbol, selectHandler, deleteHandler) {
