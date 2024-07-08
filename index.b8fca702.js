@@ -1914,7 +1914,7 @@ function setupAddCustomPrimitiveButton(handler) {
     const addCustomPrimitiveButton = document.querySelector("#add-custom-button");
     const primitiveInput = document.querySelector("#hidden-primitive-input");
     primitiveInput.addEventListener("input", (ev)=>{
-        handler(ev.target.files[0]);
+        for (const file of ev.target.files)handler(file);
     });
     addCustomPrimitiveButton.addEventListener("click", (ev)=>{
         primitiveInput.click();
