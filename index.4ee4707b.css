@@ -4,7 +4,7 @@
 
 body {
   font-family: Arial, Helvetica, sans-serif;
-  font-size: .9rem;
+  font-size: .8rem;
 }
 
 #main-canvas {
@@ -12,12 +12,21 @@ body {
 }
 
 #toolbox {
-  width: 30vw;
+  width: calc(98vw - 800px);
   height: 100vh;
   position: fixed;
   top: 1em;
   right: 1em;
   overflow-y: auto;
+}
+
+fieldset {
+  border: .25rem solid gray;
+  border-radius: .5rem;
+}
+
+legend {
+  font-weight: bold;
 }
 
 #misc-controls {
@@ -98,10 +107,6 @@ body {
   align-items: center;
   padding: .1em;
   display: grid;
-}
-
-.control-bar label {
-  font-size: .9rem;
 }
 
 .control-bar .boolean, .control-bar input[type="range"] {

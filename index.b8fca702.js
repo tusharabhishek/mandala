@@ -612,17 +612,17 @@ const parameters = [
     },
     {
         name: "rotation",
-        min: "0",
-        max: "360",
+        min: "-180",
+        max: "180",
         step: "0.001",
         initial: "0"
     },
     {
         name: "scale",
         min: "0",
-        max: "1",
+        max: "4",
         step: "0.001",
-        initial: "0.25"
+        initial: "0.5"
     },
     {
         name: "multiplicity",
@@ -862,7 +862,7 @@ function createMandalaStateFromJSON(jsonObj) {
     if (jsonObj.primitiveList) for (const { id, polarRadius, polarAngle, selfRotation, size, multiplicity, flip, invert } of jsonObj.primitiveList)state.addPrimitive(getID(), (0, _primitivesJsDefault.default)[id], {
         distance: polarRadius,
         angle: bringWithinRange(polarAngle, -180, 180),
-        rotation: bringWithinRange(selfRotation, 0, 360),
+        rotation: bringWithinRange(selfRotation, -180, 180),
         scale: size,
         multiplicity,
         flip,
